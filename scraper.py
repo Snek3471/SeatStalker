@@ -6,7 +6,42 @@ TESTUDO_URL = "https://app.testudo.umd.edu/soc/search"
 DEFAULT_SEMESTER = "202608"
 
 
-def get_sections(course_id: str, semester: str) -> list[dict]:
+def get_sections(section_ids: list[str], semester: str = DEFAULT_SEMESTER) -> list[dict]:
+    if not section_ids:
+        return []
+
+    normalized_ids = [section_id.strip().upper() for section_id in section_ids if section_id.strip()]
+    if not normalized_ids:
+        return []
+
+    course_ids = []
+    for section_id in normalized_ids:
+        course_id = section_id.split("-", 1)[0]
+        if course_id and course_id not in course_ids:
+            course_ids.append(course_id)
+
+    all_sections = []
+    for course_id in course_ids:
+        all_sections.extend(get_sections_from_testudo(course_id, semester))
+
+    requested = set(normalized_ids)
+    filtered_sections = []
+    for section in all_sections:
+        section_id = str(section.get("section_id", "")).upper()
+        if section_id in requested:
+            filtered_sections.append(
+                {
+                    "section_id": section.get("section_id", "N/A"),
+                    "open_seats": section.get("open_seats"),
+                    "seats": section.get("total_seats"),
+                    "instructors": section.get("instructors", []),
+                }
+            )
+
+    return filtered_sections
+
+
+def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
     url = (
         f"{TESTUDO_URL}?courseId={course_id}"
         f"&sectionId=&termId={semester}"
@@ -81,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument("course_id", nargs="?", default="CMSC131", help="Course ID to lookup, such as CMSC131")
     args = parser.parse_args()
 
-    sections = get_sections(args.course_id, DEFAULT_SEMESTER)
+    sections = get_sections_from_testudo(args.course_id, DEFAULT_SEMESTER)
 
     for section in sections:
         print(
