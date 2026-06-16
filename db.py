@@ -167,3 +167,35 @@ def get_watchlist_for_user(user_id: int) -> list[dict]:
         {"section_id": row[0], "course_id": row[1], "added_at": row[2].isoformat() if row[2] else None}
         for row in rows
     ]
+
+
+def create_user_with_password(name: str | None, email: str, password_hash: str) -> dict:
+    query = """
+        INSERT INTO users (name, email, password_hash)
+        VALUES (%s, %s, %s)
+        RETURNING id, email, name;
+    """
+    with _get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, (name, email, password_hash))
+            row = cur.fetchone()
+        conn.commit()
+
+    return {"id": row[0], "email": row[1], "name": row[2]}
+
+
+def get_user_auth_by_email(email: str) -> Optional[dict]:
+    query = """
+        SELECT id, email, name, password_hash
+        FROM users
+        WHERE email = %s;
+    """
+    with _get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, (email,))
+            row = cur.fetchone()
+
+    if not row:
+        return None
+
+    return {"id": row[0], "email": row[1], "name": row[2], "password_hash": row[3]}

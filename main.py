@@ -1,5 +1,6 @@
 from typing import Optional
 
+import bcrypt
 import psycopg2
 import requests
 from fastapi import FastAPI, HTTPException
@@ -9,7 +10,9 @@ from pydantic import BaseModel, EmailStr
 from db import (
     add_watchlist_entry,
     create_user,
+    create_user_with_password,
     get_user_by_email,
+    get_user_auth_by_email,
     get_watchlist_for_user,
     remove_watchlist_entry,
 )
@@ -35,6 +38,21 @@ class CreateUserRequest(BaseModel):
 class WatchlistRequest(BaseModel):
     email: EmailStr
     section_id: str
+
+
+class RegisterRequest(BaseModel):
+    name: Optional[str] = None
+    email: EmailStr
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+def _is_umd_email(email: str) -> bool:
+    return email.lower().endswith("@umd.edu")
 
 
 def _extract_section_payload(payload: object) -> dict:
@@ -84,6 +102,43 @@ def create_user_endpoint(body: CreateUserRequest) -> dict:
         raise HTTPException(status_code=409, detail="User with this email already exists") from exc
     except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"Database error creating user: {exc}") from exc
+
+
+@app.post("/auth/register")
+def register_endpoint(body: RegisterRequest) -> dict:
+    email = str(body.email).strip().lower()
+    if not _is_umd_email(email):
+        raise HTTPException(status_code=400, detail="Only @umd.edu email addresses are allowed")
+
+    if not body.password:
+        raise HTTPException(status_code=400, detail="Password is required")
+
+    password_hash = bcrypt.hashpw(body.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    try:
+        create_user_with_password(body.name, email, password_hash)
+    except psycopg2.errors.UniqueViolation as exc:
+        raise HTTPException(status_code=409, detail="User with this email already exists") from exc
+    except psycopg2.Error as exc:
+        raise HTTPException(status_code=500, detail=f"Database error creating user: {exc}") from exc
+
+    return {"success": True, "message": "User registered successfully"}
+
+
+@app.post("/auth/login")
+def login_endpoint(body: LoginRequest) -> dict:
+    email = str(body.email).strip().lower()
+    user = get_user_auth_by_email(email)
+
+    if not user or not user.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    password_hash = str(user["password_hash"])
+    is_valid = bcrypt.checkpw(body.password.encode("utf-8"), password_hash.encode("utf-8"))
+    if not is_valid:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return {"success": True, "email": user["email"], "name": user["name"]}
 
 
 @app.post("/watchlist")
