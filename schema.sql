@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
-    name TEXT
+    name TEXT,
+    password_hash TEXT
 );
 
 CREATE TABLE IF NOT EXISTS watchlist (

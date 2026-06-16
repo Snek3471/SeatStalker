@@ -5,3 +5,4 @@ sendgrid
 apscheduler
 fastapi
 uvicorn
+bcrypt
