@@ -1,7 +1,7 @@
 # SeatStalker
 
 ## Project Overview
-SeatStalker is a lightweight FastAPI + PostgreSQL app for tracking UMD class section seat availability. Users can register, add section watches, and run a scheduled poller that checks seat counts and sends email alerts when a section changes from closed (`0` open seats) to available (`> 0` open seats).
+SeatStalker is a web application for UMD students to register with their UMD email, search for course sections, watch seats for classes they care about, and receive email alerts when seats open up.
 
 ## Prerequisites
 - Python 3.10+
@@ -26,6 +26,15 @@ SeatStalker is a lightweight FastAPI + PostgreSQL app for tracking UMD class sec
    ```bash
    python scheduler.py
    ```
+
+## Frontend
+The app has a React frontend and a FastAPI backend that work together as a full stack application. The backend runs on port `8000`, and the frontend runs on port `5173`.
+
+Both services must be running locally for the app to work:
+- Start the backend with `uvicorn main:app --reload`
+- Start the frontend with `npm run dev` from the `frontend` folder
+
+The frontend reads `VITE_API_URL=http://localhost:8000` from `frontend/.env` and uses it to communicate with the backend.
 
 ## API Endpoint Documentation
 
