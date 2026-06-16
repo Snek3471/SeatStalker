@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
 
@@ -12,6 +12,8 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const successMessage = location.state?.successMessage
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -34,6 +36,7 @@ function LoginPage() {
       <div className="mx-auto mt-20 max-w-md rounded-xl bg-white p-8 shadow-lg">
         <h1 className="text-3xl font-bold text-slate-900">SeatStalker Login</h1>
         <p className="mt-2 text-sm text-slate-600">Enter your email to access your watchlist dashboard.</p>
+        {successMessage ? <p className="mt-3 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{successMessage}</p> : null}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <label className="block text-sm font-medium text-slate-700" htmlFor="email">
