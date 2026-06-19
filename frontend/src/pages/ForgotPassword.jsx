@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 
@@ -10,21 +10,14 @@ function ForgotPassword() {
   const tokenParam = searchParams.get('token')
   const emailParam = searchParams.get('email')
 
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(emailParam || '')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // Determine if we are in reset mode based on URL parameters
   const isResetMode = !!(tokenParam && emailParam)
-
-  useEffect(() => {
-    if (emailParam) {
-      setEmail(emailParam)
-    }
-  }, [emailParam])
 
   const requestResetLink = async (event) => {
     event.preventDefault()
@@ -87,30 +80,31 @@ function ForgotPassword() {
   }
 
   return (
-    <main className="min-h-screen bg-[#E03a3e] px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto mt-8 max-w-md rounded-2xl border border-white/30 bg-white p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-[#E03a3e]">
-          {isResetMode ? 'Set New Password' : 'Reset Your Password'}
+    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+      <div className="w-full max-w-md border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060,-8px_-8px_0_#2d2d2d] sm:p-8">
+        <h1 className="text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+          {isResetMode ? 'New password' : 'Reset password'}
         </h1>
-        <p className="mt-2 text-sm text-slate-700">
+        <p className="mt-3 text-center text-sm font-bold text-[#d8d8d8]">
           {isResetMode
             ? 'Enter your new password below.'
-            : 'We’ll email a reset link to your registered @umd.edu address.'}
+            : "We'll email a reset link to your registered @umd.edu address."}
         </p>
 
-        <form onSubmit={isResetMode ? confirmReset : requestResetLink} className="mt-6 space-y-4">
+        <form onSubmit={isResetMode ? confirmReset : requestResetLink} className="mt-8 space-y-6">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-semibold text-slate-700">
-              UMD Email
+            <label htmlFor="email" className="block text-lg font-black text-white">
+              Email
             </label>
+            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @umd.edu</p>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               disabled={isResetMode}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring disabled:bg-slate-100 disabled:text-slate-500"
-              placeholder="example@umd.edu"
+              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20 disabled:bg-[#2b2b2b] disabled:text-[#bfbfbf]"
+              placeholder="yourname@umd.edu"
               required
             />
           </div>
@@ -118,7 +112,7 @@ function ForgotPassword() {
           {isResetMode ? (
             <>
               <div>
-                <label htmlFor="newPassword" className="mb-1 block text-sm font-semibold text-slate-700">
+                <label htmlFor="newPassword" className="block text-lg font-black text-white">
                   New Password
                 </label>
                 <input
@@ -126,14 +120,14 @@ function ForgotPassword() {
                   type="password"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Enter a new password"
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="mb-1 block text-sm font-semibold text-slate-700">
+                <label htmlFor="confirmPassword" className="block text-lg font-black text-white">
                   Confirm New Password
                 </label>
                 <input
@@ -141,7 +135,7 @@ function ForgotPassword() {
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Re-enter your new password"
                   required
                 />
@@ -149,20 +143,26 @@ function ForgotPassword() {
             </>
           ) : null}
 
-          {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
-          {success ? <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p> : null}
+          {error ? (
+            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">{error}</p>
+          ) : null}
+          {success ? (
+            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+              {success}
+            </p>
+          ) : null}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-[#E03a3e] px-4 py-2 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full border-4 border-[#f5f5f5] bg-white px-4 py-3 text-base font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading ? 'Processing...' : isResetMode ? 'Reset Password' : 'Send Reset Link'}
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-slate-700">
-          <Link to="/login" className="font-semibold text-[#E03a3e] underline-offset-4 hover:underline">
+        <p className="mt-7 text-center text-sm font-black text-white">
+          <Link to="/login" className="underline underline-offset-4 hover:text-[#bfbfbf]">
             Back to login
           </Link>
         </p>

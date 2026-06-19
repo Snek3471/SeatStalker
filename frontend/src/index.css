@@ -6,3 +6,19 @@ body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1f1f1f inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.pixel-cursor-active,
+  body.pixel-cursor-active * {
+    cursor: none !important;
+  }
+}
