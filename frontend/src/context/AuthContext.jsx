@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem('seatstalker_user_name')
     setUser(null)
   }
 
