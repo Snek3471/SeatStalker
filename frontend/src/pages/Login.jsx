@@ -66,7 +66,7 @@ function Login() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
-              placeholder="yourname@umd.edu"
+              placeholder="example@umd.edu"
               required
             />
           </div>
@@ -101,6 +101,12 @@ function Login() {
           New user?{' '}
           <Link to="/register" className="font-semibold text-[#E03a3e] underline-offset-4 hover:underline">
             Create an account
+          </Link>
+        </p>
+        <p className="mt-2 text-sm text-slate-700">
+          Forgot your password?{' '}
+          <Link to="/forgot-password" className="font-semibold text-[#E03a3e] underline-offset-4 hover:underline">
+            Reset it here
           </Link>
         </p>
       </div>

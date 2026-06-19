@@ -137,6 +137,43 @@ function Dashboard() {
         </section>
 
         <section className="rounded-2xl border border-white/30 bg-white p-6 shadow-2xl">
+          <h2 className="text-2xl font-bold text-[#E03a3e]">Your Watchlist</h2>
+          <p className="mt-2 text-sm text-slate-600">These sections are checked automatically by the poller.</p>
+
+          <div className="mt-5 space-y-4">
+            {watchlistLoading ? (
+              <div className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-6 text-slate-600">
+                <Spinner />
+                Loading your watchlist...
+              </div>
+            ) : watchlist.length === 0 ? (
+              <p className="rounded-md border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-600">
+                Your watchlist is empty. Search a course above and click Watch to add sections.
+              </p>
+            ) : (
+              watchlist.map((entry) => (
+                <article key={`${entry.section_id}-${entry.added_at}`} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">{entry.section_id}</h3>
+                    <p className="text-sm text-slate-600">Course: {entry.course_id}</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(entry.section_id)}
+                    disabled={actionLoadingId === entry.section_id}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#E03a3e] px-4 py-2 font-semibold text-[#E03a3e] transition hover:bg-[#E03a3e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {actionLoadingId === entry.section_id ? <Spinner /> : null}
+                    Remove
+                  </button>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/30 bg-white p-6 shadow-2xl">
           <h2 className="text-2xl font-bold text-[#E03a3e]">Course Search</h2>
           <p className="mt-2 text-sm text-slate-600">Search a course ID like CMSC131 to see all available sections.</p>
 
@@ -199,43 +236,6 @@ function Dashboard() {
                 </div>
               </article>
             ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/30 bg-white p-6 shadow-2xl">
-          <h2 className="text-2xl font-bold text-[#E03a3e]">Your Watchlist</h2>
-          <p className="mt-2 text-sm text-slate-600">These sections are checked automatically by the poller.</p>
-
-          <div className="mt-5 space-y-4">
-            {watchlistLoading ? (
-              <div className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-6 text-slate-600">
-                <Spinner />
-                Loading your watchlist...
-              </div>
-            ) : watchlist.length === 0 ? (
-              <p className="rounded-md border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-600">
-                Your watchlist is empty. Search a course above and click Watch to add sections.
-              </p>
-            ) : (
-              watchlist.map((entry) => (
-                <article key={`${entry.section_id}-${entry.added_at}`} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">{entry.section_id}</h3>
-                    <p className="text-sm text-slate-600">Course: {entry.course_id}</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(entry.section_id)}
-                    disabled={actionLoadingId === entry.section_id}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#E03a3e] px-4 py-2 font-semibold text-[#E03a3e] transition hover:bg-[#E03a3e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {actionLoadingId === entry.section_id ? <Spinner /> : null}
-                    Remove
-                  </button>
-                </article>
-              ))
-            )}
           </div>
         </section>
       </div>
