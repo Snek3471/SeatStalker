@@ -19,8 +19,10 @@ function Register() {
     setError('')
 
     const normalizedEmail = email.trim().toLowerCase()
-    if (!normalizedEmail.endsWith('@umd.edu')) {
-      setError('Please use a valid @umd.edu email address.')
+    const isUmdEmail =
+      normalizedEmail.endsWith('@umd.edu') || normalizedEmail.endsWith('@terpmail.umd.edu')
+    if (!isUmdEmail) {
+      setError('Please use a valid @umd.edu or @terpmail.umd.edu email address.')
       return
     }
 

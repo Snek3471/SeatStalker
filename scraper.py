@@ -1,9 +1,13 @@
+import os
 from bs4 import BeautifulSoup
 import requests
 import argparse
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TESTUDO_URL = "https://app.testudo.umd.edu/soc/search"
-DEFAULT_SEMESTER = "202608"
+DEFAULT_SEMESTER = os.getenv("UMD_SEMESTER", "202608")
 
 
 def get_sections(section_ids: list[str], semester: str = DEFAULT_SEMESTER) -> list[dict]:
@@ -35,6 +39,8 @@ def get_sections(section_ids: list[str], semester: str = DEFAULT_SEMESTER) -> li
                     "open_seats": section.get("open_seats"),
                     "seats": section.get("total_seats"),
                     "instructors": section.get("instructors", []),
+                    "meetings": section.get("meetings", []),
+                    "days_info": section.get("days_info", []),
                 }
             )
 
@@ -93,6 +99,35 @@ def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
                 if instructor.get_text(strip=True)
             ]
 
+            # Parse meeting times
+            meetings = []
+            days_info = []
+            days_container = section_html.find("div", class_="class-days-container")
+            if days_container:
+                for row in days_container.find_all("div", class_="row"):
+                    days_html = row.find("span", class_="section-days")
+                    start_html = row.find("span", class_="class-start-time")
+                    end_html = row.find("span", class_="class-end-time")
+                    bldg_html = row.find("span", class_="building-code")
+                    room_html = row.find("span", class_="class-room")
+
+                    days = days_html.get_text(strip=True) if days_html else "TBA"
+                    start_time = start_html.get_text(strip=True) if start_html else "TBA"
+                    end_time = end_html.get_text(strip=True) if end_html else "TBA"
+                    building = bldg_html.get_text(strip=True) if bldg_html else "TBA"
+                    room = room_html.get_text(strip=True) if room_html else "TBA"
+
+                    meeting_obj = {
+                        "days": days,
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "building": building,
+                        "room": room,
+                        "classtype": "",
+                    }
+                    meetings.append(meeting_obj)
+                    days_info.append(meeting_obj)
+
             if section_number:
                 if section_number.startswith(course_id):
                     section_id = section_number
@@ -105,6 +140,8 @@ def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
                         "open_seats": open_seats,
                         "total_seats": total_seats,
                         "instructors": instructors,
+                        "meetings": meetings,
+                        "days_info": days_info,
                     }
                 )
 
@@ -120,5 +157,6 @@ if __name__ == "__main__":
 
     for section in sections:
         print(
-            f"section_id: {section['section_id']}, open_seats: {section['open_seats']}, total_seats: {section['total_seats']}, instructors: {section['instructors']}"
+            f"section_id: {section['section_id']}, open_seats: {section['open_seats']}, total_seats: {section['total_seats']}, instructors: {section['instructors']}, meetings: {section['meetings']}"
         )
+

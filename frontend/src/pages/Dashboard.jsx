@@ -12,7 +12,8 @@ function Spinner() {
 }
 
 function formatMeeting(section) {
-  const meeting = Array.isArray(section?.days_info) ? section.days_info[0] : null
+  const meetings = section?.meetings || section?.days_info
+  const meeting = Array.isArray(meetings) ? meetings[0] : null
   if (!meeting) return 'TBA'
 
   const days = meeting.days || 'TBA'
@@ -60,7 +61,7 @@ function Dashboard() {
 
     try {
       const courseId = searchCourseId.trim().toUpperCase()
-      const response = await axios.get(`${UMD_COURSES_URL}/${courseId}/sections`)
+      const response = await axios.get(`${API_URL}/courses/${courseId}/sections`)
       const payload = response.data
       const nextSections = Array.isArray(payload)
         ? payload

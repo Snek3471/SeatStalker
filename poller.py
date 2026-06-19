@@ -12,9 +12,9 @@ from db import (
     get_watched_sections,
     update_section_cache,
 )
+from scraper import get_sections
 
 BATCH_SIZE = 50
-BATCH_SECTIONS_URL = "https://api.umd.io/v1/courses/sections"
 REGISTRATION_URL = "https://app.testudo.umd.edu/soc"
 
 load_dotenv()
@@ -25,19 +25,12 @@ def _chunked(items: list[str], chunk_size: int) -> list[list[str]]:
 
 
 def _fetch_sections_batch(section_ids: list[str]) -> list[dict]:
-    if not section_ids:
+    try:
+        return get_sections(section_ids)
+    except Exception as exc:
+        print(f"[{_timestamp()}] ERROR: Scraper failed to fetch sections: {exc}")
         return []
 
-    url = f"{BATCH_SECTIONS_URL}/{','.join(section_ids)}"
-    response = requests.get(url, timeout=15)
-    response.raise_for_status()
-    payload = response.json()
-
-    if isinstance(payload, list):
-        return payload
-    if isinstance(payload, dict):
-        return payload.get("sections", [])
-    return []
 
 
 def _to_int(value, default: int = 0) -> int:
