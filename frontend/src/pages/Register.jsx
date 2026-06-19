@@ -78,20 +78,22 @@ function Register() {
   }
 
   return (
-    <main className="min-h-screen bg-[#E03a3e] px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto mt-8 max-w-md rounded-2xl border border-white/30 bg-white p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-[#E03a3e]">Create Your SeatStalker Account</h1>
-        <p className="mt-2 text-sm text-slate-700">
+    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+      <div className="w-full max-w-md border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060,-8px_-8px_0_#2d2d2d] sm:p-8">
+        <h1 className="text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+          {step === 'verify' ? 'Verify email' : 'Sign up'}
+        </h1>
+        <p className="mt-3 text-center text-sm font-bold text-[#d8d8d8]">
           {step === 'verify'
             ? 'Enter the 6-digit verification code sent to your UMD email.'
             : 'Use your UMD email to start tracking sections.'}
         </p>
 
-        <form onSubmit={step === 'verify' ? handleVerifyAndRegister : handleSendOtp} className="mt-6 space-y-4">
+        <form onSubmit={step === 'verify' ? handleVerifyAndRegister : handleSendOtp} className="mt-8 space-y-6">
           {step === 'input' ? (
             <>
               <div>
-                <label htmlFor="name" className="mb-1 block text-sm font-semibold text-slate-700">
+                <label htmlFor="name" className="block text-lg font-black text-white">
                   Full Name
                 </label>
                 <input
@@ -99,29 +101,30 @@ function Register() {
                   type="text"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Terp Student"
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="mb-1 block text-sm font-semibold text-slate-700">
-                  UMD Email
+                <label htmlFor="email" className="block text-lg font-black text-white">
+                  Email
                 </label>
+                <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @umd.edu</p>
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
-                  placeholder="example@umd.edu"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
+                  placeholder="yourname@umd.edu"
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="mb-1 block text-sm font-semibold text-slate-700">
+                <label htmlFor="password" className="block text-lg font-black text-white">
                   Password
                 </label>
                 <input
@@ -129,14 +132,14 @@ function Register() {
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Enter password"
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="mb-1 block text-sm font-semibold text-slate-700">
+                <label htmlFor="confirmPassword" className="block text-lg font-black text-white">
                   Confirm Password
                 </label>
                 <input
@@ -144,7 +147,7 @@ function Register() {
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Re-enter password"
                   required
                 />
@@ -153,7 +156,7 @@ function Register() {
           ) : (
             <>
               <div>
-                <label htmlFor="otp" className="mb-1 block text-sm font-semibold text-slate-700">
+                <label htmlFor="otp" className="block text-lg font-black text-white">
                   Verification Code
                 </label>
                 <input
@@ -161,7 +164,7 @@ function Register() {
                   type="text"
                   value={otp}
                   onChange={(event) => setOtp(event.target.value)}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Enter the 6-digit code"
                   inputMode="numeric"
                   required
@@ -170,20 +173,26 @@ function Register() {
               <button
                 type="button"
                 onClick={() => setStep('input')}
-                className="text-sm font-semibold text-[#E03a3e] hover:underline animate-fade-in"
+                className="text-sm font-black text-white underline underline-offset-4 hover:text-[#bfbfbf]"
               >
-                ← Back to registration details
+                Back to registration details
               </button>
             </>
           )}
 
-          {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 animate-pulse">{error}</p> : null}
-          {success ? <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p> : null}
+          {error ? (
+            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">{error}</p>
+          ) : null}
+          {success ? (
+            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+              {success}
+            </p>
+          ) : null}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-[#E03a3e] px-4 py-2 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full border-4 border-[#f5f5f5] bg-white px-4 py-3 text-base font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading
               ? 'Please wait...'
@@ -193,9 +202,9 @@ function Register() {
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-slate-700">
+        <p className="mt-7 text-center text-sm font-black text-white">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-[#E03a3e] underline-offset-4 hover:underline">
+          <Link to="/login" className="underline underline-offset-4 hover:text-[#bfbfbf]">
             Log in
           </Link>
         </p>

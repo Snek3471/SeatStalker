@@ -5,10 +5,10 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 
 const API_URL = import.meta.env.VITE_API_URL
-const UMD_COURSES_URL = 'https://api.umd.io/v1/courses'
+const SECTION_HEADING_CLASS = 'text-2xl font-black uppercase leading-none tracking-normal text-white [text-shadow:2px_2px_0_#8b8b8b]'
 
 function Spinner() {
-  return <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+  return <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
 }
 
 function formatMeeting(section) {
@@ -49,6 +49,7 @@ function Dashboard() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadWatchlist()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email])
@@ -121,48 +122,59 @@ function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[#E03a3e] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <main className="min-h-screen overflow-y-auto bg-black px-4 py-8 font-mono text-white sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-8 pb-10">
         <Navbar />
 
-        <section className="rounded-2xl border border-white/30 bg-white p-6 shadow-2xl">
-          <h1 className="text-3xl font-bold text-[#E03a3e]">Dashboard</h1>
-          <p className="mt-2 text-sm text-slate-700">
+        <section className="border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060]">
+          <h1 className={SECTION_HEADING_CLASS}>Dashboard</h1>
+          <p className="mt-3 text-sm font-bold text-[#d8d8d8]">
             Logged in as <span className="font-semibold">{user?.email}</span>
-            {userName ? <span className="ml-2 text-slate-500">({userName})</span> : null}
+            {userName ? <span className="ml-2 text-[#bfbfbf]">({userName})</span> : null}
           </p>
 
-          {message ? <p className="mt-4 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{message}</p> : null}
-          {error ? <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+          {message ? (
+            <p className="mt-4 border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+              {message}
+            </p>
+          ) : null}
+          {error ? (
+            <p className="mt-4 border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+              {error}
+            </p>
+          ) : null}
         </section>
 
-        <section className="rounded-2xl border border-white/30 bg-white p-6 shadow-2xl">
-          <h2 className="text-2xl font-bold text-[#E03a3e]">Your Watchlist</h2>
-          <p className="mt-2 text-sm text-slate-600">These sections are checked automatically by the poller.</p>
+        <section className="border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060]">
+          <h2 className={SECTION_HEADING_CLASS}>Your Watchlist</h2>
+          <p className="mt-2 text-sm font-bold text-[#d8d8d8]">These sections are checked automatically by the poller.</p>
 
           <div className="mt-5 space-y-4">
             {watchlistLoading ? (
-              <div className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-6 text-slate-600">
+              <div className="flex items-center gap-3 border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-6 text-sm font-bold text-white shadow-[6px_6px_0_#5f5f5f]">
                 <Spinner />
                 Loading your watchlist...
               </div>
             ) : watchlist.length === 0 ? (
-              <p className="rounded-md border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-600">
+              <p className="border-4 border-dashed border-[#8f8f8f] bg-[#1f1f1f] px-4 py-6 text-sm font-bold text-[#d8d8d8]">
                 Your watchlist is empty. Search a course above and click Watch to add sections.
               </p>
             ) : (
               watchlist.map((entry) => (
-                <article key={`${entry.section_id}-${entry.added_at}`} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                <article
+                  key={`${entry.section_id}-${entry.added_at}`}
+                  className="flex flex-col gap-4 border-4 border-[#8f8f8f] bg-[#1f1f1f] p-4 shadow-[6px_6px_0_#5f5f5f] md:flex-row md:items-center md:justify-between"
+                >
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900">{entry.section_id}</h3>
-                    <p className="text-sm text-slate-600">Course: {entry.course_id}</p>
+                    <h3 className="text-lg font-black text-white">{entry.section_id}</h3>
+                    <p className="text-sm font-bold text-[#d8d8d8]">Course: {entry.course_id}</p>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => handleRemove(entry.section_id)}
                     disabled={actionLoadingId === entry.section_id}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#E03a3e] px-4 py-2 font-semibold text-[#E03a3e] transition hover:bg-[#E03a3e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 border-4 border-[#f5f5f5] bg-white px-4 py-2 font-black text-[#111111] shadow-[4px_4px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {actionLoadingId === entry.section_id ? <Spinner /> : null}
                     Remove
@@ -173,16 +185,16 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/30 bg-white p-6 shadow-2xl">
-          <h2 className="text-2xl font-bold text-[#E03a3e]">Course Search</h2>
-          <p className="mt-2 text-sm text-slate-600">Search a course ID like CMSC131 to see all available sections.</p>
+        <section className="border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060]">
+          <h2 className={SECTION_HEADING_CLASS}>Course Search</h2>
+          <p className="mt-2 text-sm font-bold text-[#d8d8d8]">Search a course ID like CMSC131 to see all available sections.</p>
 
           <form onSubmit={handleSearch} className="mt-5 flex flex-col gap-3 md:flex-row">
             <input
               type="text"
               value={searchCourseId}
               onChange={(event) => setSearchCourseId(event.target.value)}
-              className="flex-1 rounded-md border border-slate-300 px-4 py-3 outline-none ring-[#E03a3e]/25 focus:ring"
+              className="flex-1 border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
               placeholder="CMSC131"
               aria-label="Course ID"
               required
@@ -190,7 +202,7 @@ function Dashboard() {
             <button
               type="submit"
               disabled={searchLoading}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-[#E03a3e] px-5 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 border-4 border-[#f5f5f5] bg-white px-5 py-3 font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {searchLoading ? <Spinner /> : null}
               {searchLoading ? 'Searching...' : 'Search'}
@@ -199,28 +211,28 @@ function Dashboard() {
 
           <div className="mt-6 space-y-4">
             {sections.length === 0 && !searchLoading ? (
-              <p className="rounded-md border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-600">
+              <p className="border-4 border-dashed border-[#8f8f8f] bg-[#1f1f1f] px-4 py-6 text-sm font-bold text-[#d8d8d8]">
                 Search for a course to view its sections.
               </p>
             ) : null}
 
             {sections.map((section) => (
-              <article key={section.section_id} className="rounded-xl border border-slate-200 p-4 shadow-sm">
+              <article key={section.section_id} className="border-4 border-[#8f8f8f] bg-[#1f1f1f] p-4 shadow-[6px_6px_0_#5f5f5f]">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900">{section.section_id}</h3>
-                    <p className="mt-1 text-sm text-slate-600">
-                      <span className="font-semibold text-slate-800">Instructors:</span>{' '}
+                    <h3 className="text-lg font-black text-white">{section.section_id}</h3>
+                    <p className="mt-1 text-sm font-bold text-[#d8d8d8]">
+                      <span className="text-white">Instructors:</span>{' '}
                       {Array.isArray(section.instructors) && section.instructors.length > 0
                         ? section.instructors.join(', ')
                         : 'TBA'}
                     </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      <span className="font-semibold text-slate-800">Meeting:</span> {formatMeeting(section)}
+                    <p className="mt-1 text-sm font-bold text-[#d8d8d8]">
+                      <span className="text-white">Meeting:</span> {formatMeeting(section)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      <span className="font-semibold text-slate-800">Seats:</span> {section.seats ?? 'N/A'} |{' '}
-                      <span className="font-semibold text-slate-800">Open:</span> {section.open_seats ?? 'N/A'}
+                    <p className="mt-1 text-sm font-bold text-[#d8d8d8]">
+                      <span className="text-white">Seats:</span> {section.seats ?? 'N/A'} |{' '}
+                      <span className="text-white">Open:</span> {section.open_seats ?? 'N/A'}
                     </p>
                   </div>
 
@@ -228,7 +240,7 @@ function Dashboard() {
                     type="button"
                     onClick={() => handleWatch(section.section_id)}
                     disabled={actionLoadingId === section.section_id}
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-[#E03a3e] px-4 py-2 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 border-4 border-[#f5f5f5] bg-white px-4 py-2 font-black text-[#111111] shadow-[4px_4px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {actionLoadingId === section.section_id ? <Spinner /> : null}
                     Watch

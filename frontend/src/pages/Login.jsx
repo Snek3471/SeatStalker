@@ -46,67 +46,79 @@ function Login() {
   }
 
   return (
-    <main className="min-h-screen bg-[#E03a3e] px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto mt-8 max-w-md rounded-2xl border border-white/30 bg-white p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-[#E03a3e]">Welcome Back</h1>
-        <p className="mt-2 text-sm text-slate-700">Log in with your UMD account to access your dashboard.</p>
+    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+      <div className="w-full max-w-md border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060,-8px_-8px_0_#2d2d2d] sm:p-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+            Welcome back
+          </h1>
+          <p className="mt-3 text-sm font-bold text-[#d8d8d8]">Login with your UMD account</p>
+        </div>
 
         {successMessage ? (
-          <p className="mt-3 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{successMessage}</p>
+          <p className="mt-5 border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+            {successMessage}
+          </p>
         ) : null}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-semibold text-slate-700">
-              UMD Email
+            <label htmlFor="email" className="block text-lg font-black text-white">
+              Email
             </label>
+            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @umd.edu</p>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
-              placeholder="example@umd.edu"
+              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
+              placeholder="yourname@umd.edu"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-semibold text-slate-700">
-              Password
-            </label>
+            <div className="flex items-center gap-4">
+              <label htmlFor="password" className="block text-lg font-black text-white">
+                Password
+              </label>
+              <Link
+                to="/forgot-password"
+                className="ml-auto text-xs font-black text-white underline underline-offset-4 hover:text-[#bfbfbf]"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-[#E03a3e]/25 focus:ring"
-              placeholder="Enter your password"
+              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none focus:border-white focus:ring-4 focus:ring-white/20"
               required
             />
           </div>
 
-          {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+          {error ? (
+            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+              {error}
+            </p>
+          ) : null}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-[#E03a3e] px-4 py-2 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full border-4 border-[#f5f5f5] bg-white px-4 py-3 text-base font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-slate-700">
-          New user?{' '}
-          <Link to="/register" className="font-semibold text-[#E03a3e] underline-offset-4 hover:underline">
-            Create an account
-          </Link>
-        </p>
-        <p className="mt-2 text-sm text-slate-700">
-          Forgot your password?{' '}
-          <Link to="/forgot-password" className="font-semibold text-[#E03a3e] underline-offset-4 hover:underline">
-            Reset it here
+        <p className="mt-7 text-center text-sm font-black text-white">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="underline underline-offset-4 hover:text-[#bfbfbf]">
+            Sign up
           </Link>
         </p>
       </div>
