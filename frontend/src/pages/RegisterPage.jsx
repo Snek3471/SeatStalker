@@ -14,11 +14,18 @@ function RegisterPage() {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!normalizedEmail.endsWith('@umd.edu')) {
+      setError('Please use a valid @umd.edu email address.')
+      return
+    }
+
     setIsLoading(true)
 
     try {
       await axios.post(`${API_URL}/users`, {
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         name: name.trim() || null,
       })
       navigate('/login')
@@ -57,7 +64,7 @@ function RegisterPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-sky-200 focus:ring"
-            placeholder="you@example.com"
+            placeholder="example@umd.edu"
             required
           />
 
