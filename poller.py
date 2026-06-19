@@ -8,11 +8,14 @@ from sendgrid.helpers.mail import Mail
 
 from db import (
     get_cached_open_seats,
-    get_users_watching,
     get_watched_sections,
     update_section_cache,
+    get_unnotified_users_for_section,
+    mark_watchlist_entry_notified,
+    reset_watchlist_alerts,
 )
 from scraper import get_sections
+from main import _send_email
 
 BATCH_SIZE = 50
 REGISTRATION_URL = "https://app.testudo.umd.edu/soc"
@@ -44,38 +47,20 @@ def _timestamp() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def _get_sendgrid_config() -> tuple[str | None, str | None]:
-    api_key = os.getenv("SENDGRID_API_KEY")
-    sender_email = os.getenv("SENDGRID_SENDER_EMAIL") or os.getenv("SENDER_EMAIL")
-    return api_key, sender_email
-
-
 def _send_seat_alerts(section_id: str, open_seats: int, recipient_emails: list[str]) -> None:
-    api_key, sender_email = _get_sendgrid_config()
-
-    if not api_key or not sender_email:
-        print(
-            f"[{_timestamp()}] ERROR: Missing SENDGRID_API_KEY or SENDGRID_SENDER_EMAIL in .env. Skipping email alerts for {section_id}."
-        )
-        return
-
-    client = SendGridAPIClient(api_key)
     subject = f"Seat available in {section_id}"
     body = (
-        f"A seat opened up in {section_id}.\n"
-        f"Open seats available: {open_seats}.\n"
-        f"Register here: {REGISTRATION_URL}"
+        f"gang\n"
+        f"a seat available in {section_id}.\n"
+        f"go grab it before someone else does: https://testudo.umd.edu/\n"
+        f"\n"
+        f"your friendly neighborhood seat stalker\n"
+        f"ps. better than the mckeldin one\n"
     )
 
     for recipient in recipient_emails:
         try:
-            message = Mail(
-                from_email=sender_email,
-                to_emails=recipient,
-                subject=subject,
-                plain_text_content=body,
-            )
-            client.send(message)
+            _send_email(recipient, subject, body)
         except Exception as exc:
             print(f"[{_timestamp()}] ERROR: Failed to send email to {recipient} for {section_id}: {exc}")
 
@@ -97,15 +82,23 @@ def main() -> None:
 
                 new_open_seats = _to_int(section.get("open_seats"))
                 total_seats = _to_int(section.get("seats"))
-                old_open_seats = get_cached_open_seats(section_id)
 
-                if old_open_seats == 0 and new_open_seats > 0:
-                    emails = get_users_watching(section_id)
-                    print(
-                        f"ALERT: {section_id} opened {new_open_seats} seats. Notifying: {', '.join(emails) if emails else 'no subscribers'}"
-                    )
-                    if emails:
+                if new_open_seats > 0:
+                    # Get all users watching this section who haven't been notified yet
+                    unnotified = get_unnotified_users_for_section(section_id)
+                    if unnotified:
+                        emails = [item["email"] for item in unnotified]
+                        print(
+                            f"ALERT: {section_id} has {new_open_seats} seats. Notifying unnotified users: {', '.join(emails)}"
+                        )
                         _send_seat_alerts(section_id, new_open_seats, emails)
+
+                        # Mark notified
+                        for item in unnotified:
+                            mark_watchlist_entry_notified(item["email"], section_id)
+                else:
+                    # Reset alerts for this section so users get notified if a seat opens again
+                    reset_watchlist_alerts(section_id)
 
                 update_section_cache(section_id, new_open_seats, total_seats)
 
