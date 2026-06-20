@@ -9,5 +9,5 @@ python-jose
 passlib
 slowapi
 apscheduler
-sendgrid
+resend
 email-validator
