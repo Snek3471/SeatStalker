@@ -3,8 +3,8 @@ import axios from 'axios'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
+import { API_URL } from '../config/api'
 
-const API_URL = import.meta.env.VITE_API_URL
 const USER_NAME_STORAGE_KEY = 'seatstalker_user_name'
 
 function Login() {

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from '../config/api'
 
 function RegisterPage() {
   const [name, setName] = useState('')

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from '../config/api'
 
 function ForgotPassword() {
   const [searchParams] = useSearchParams()
