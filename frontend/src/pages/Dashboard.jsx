@@ -3,8 +3,7 @@ import axios from 'axios'
 
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
-
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from '../config/api'
 const SECTION_HEADING_CLASS = 'text-2xl font-black uppercase leading-none tracking-normal text-white [text-shadow:2px_2px_0_#8b8b8b]'
 
 function Spinner() {

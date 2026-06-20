@@ -3,8 +3,7 @@ import axios from 'axios'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
-
-const API_URL = import.meta.env.VITE_API_URL
+import { API_URL } from '../config/api'
 
 function LoginPage() {
   const [email, setEmail] = useState('')
