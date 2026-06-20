@@ -35,11 +35,15 @@ function Dashboard() {
   const userName = useMemo(() => localStorage.getItem('seatstalker_user_name') || '', [])
 
   const loadWatchlist = async () => {
-    if (!user?.email) return
+    if (!user?.token) return
 
     setWatchlistLoading(true)
     try {
-      const response = await axios.get(`${API_URL}/watchlist/${encodeURIComponent(user.email)}`)
+      const response = await axios.get(`${API_URL}/watchlist`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      })
       setWatchlist(response.data?.watchlist || [])
     } catch (requestError) {
       setError(requestError?.response?.data?.detail || 'Failed to load your watchlist.')
@@ -52,7 +56,7 @@ function Dashboard() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadWatchlist()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.email])
+  }, [user?.token])
 
   const handleSearch = async (event) => {
     event.preventDefault()
@@ -87,10 +91,17 @@ function Dashboard() {
     setActionLoadingId(sectionId)
 
     try {
-      await axios.post(`${API_URL}/watchlist`, {
-        email: user?.email,
-        section_id: sectionId,
-      })
+      await axios.post(
+        `${API_URL}/watchlist`,
+        {
+          section_id: sectionId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      )
       setMessage(`Now watching ${sectionId}.`)
       await loadWatchlist()
     } catch (requestError) {
@@ -107,8 +118,10 @@ function Dashboard() {
 
     try {
       await axios.delete(`${API_URL}/watchlist`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
         data: {
-          email: user?.email,
           section_id: sectionId,
         },
       })

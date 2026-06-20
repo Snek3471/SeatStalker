@@ -24,7 +24,7 @@ function LoginPage() {
       await axios.get(`${API_URL}/watchlist/${encodeURIComponent(email.trim().toLowerCase())}`)
       login(email)
       navigate('/dashboard')
-    } catch (requestError) {
+    } catch {
       setError('Could not log in with that email. Please register first.')
     } finally {
       setIsLoading(false)

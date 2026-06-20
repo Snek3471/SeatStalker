@@ -38,6 +38,7 @@ def get_sections(section_ids: list[str], semester: str = DEFAULT_SEMESTER) -> li
                     "section_id": section.get("section_id", "N/A"),
                     "open_seats": section.get("open_seats"),
                     "seats": section.get("total_seats"),
+                    "waitlist": section.get("waitlist"),
                     "instructors": section.get("instructors", []),
                     "meetings": section.get("meetings", []),
                     "days_info": section.get("days_info", []),
@@ -77,11 +78,13 @@ def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
             section_id_html = section_html.find("span", class_="section-id")
             open_seats_html = section_html.find("span", class_="open-seats-count")
             total_seats_html = section_html.find("span", class_="total-seats-count")
+            waitlist_html = section_html.find("span", class_="waitlist-count")
             instructors_html = section_html.find_all("span", class_="section-instructor")
 
             section_number = section_id_html.get_text(strip=True) if section_id_html else None
             open_seats_text = open_seats_html.get_text(strip=True) if open_seats_html else "0"
             total_seats_text = total_seats_html.get_text(strip=True) if total_seats_html else "0"
+            waitlist_text = waitlist_html.get_text(strip=True) if waitlist_html else "0"
 
             try:
                 open_seats = int(open_seats_text)
@@ -92,6 +95,11 @@ def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
                 total_seats = int(total_seats_text)
             except ValueError:
                 total_seats = 0
+
+            try:
+                waitlist = int(waitlist_text)
+            except ValueError:
+                waitlist = 0
 
             instructors = [
                 instructor.get_text(strip=True)
@@ -139,6 +147,7 @@ def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
                         "section_id": section_id,
                         "open_seats": open_seats,
                         "total_seats": total_seats,
+                        "waitlist": waitlist,
                         "instructors": instructors,
                         "meetings": meetings,
                         "days_info": days_info,

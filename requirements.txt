@@ -6,3 +6,6 @@ apscheduler
 fastapi
 uvicorn
 bcrypt
+python-jose
+passlib
+slowapi

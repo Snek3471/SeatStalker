@@ -11,11 +11,17 @@ import bcrypt
 import psycopg2
 import requests
 import sqlite3
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from jose import jwt, JWTError
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from db import (
     add_watchlist_entry,
@@ -29,6 +35,7 @@ from db import (
     increment_password_reset_attempts,
     remove_watchlist_entry,
     is_watching_section,
+    get_users_watching,
     update_user_password_hash,
     upsert_password_reset_code,
     upsert_register_verification_code,
@@ -41,11 +48,29 @@ import scraper
 SECTIONS_API_BASE = "https://api.umd.io/v1/courses/sections"
 
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+app.state.limiter = limiter
+
+@app.exception_handler(RateLimitExceeded)
+def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many requests. Please slow down and try again later."}
+    )
+
+frontend_url = os.getenv("FRONTEND_URL")
+origins = ["http://localhost:5173"]
+if frontend_url:
+    # Handle multiple comma-separated origins if provided, or just append the single one
+    if "," in frontend_url:
+        origins.extend([o.strip() for o in frontend_url.split(",") if o.strip()])
+    else:
+        origins.append(frontend_url.strip())
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,7 +83,6 @@ class CreateUserRequest(BaseModel):
 
 
 class WatchlistRequest(BaseModel):
-    email: EmailStr
     section_id: str
 
 
@@ -91,6 +115,28 @@ class PasswordResetConfirmRequest(BaseModel):
 UMD_EMAIL_SUFFIX = "@umd.edu"
 PASSWORD_RESET_TTL_MINUTES = int(os.getenv("PASSWORD_RESET_TTL_MINUTES", "15"))
 PASSWORD_RESET_OTP_LENGTH = 6
+JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-default-key-for-development")
+ALGORITHM = "HS256"
+reusable_oauth2 = HTTPBearer()
+
+
+def get_current_user(http_auth: HTTPAuthorizationCredentials = Depends(reusable_oauth2)) -> dict:
+    token = http_auth.credentials
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
+        email = payload.get("email")
+        user_id = payload.get("id")
+        if email is None or user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token claims")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+    user = get_user_by_email(email)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
 
 
 def _is_umd_email(email: str) -> bool:
@@ -254,7 +300,8 @@ def search_course_sections_endpoint(course_id: str) -> list[dict]:
 
 
 @app.post("/auth/register/send-otp")
-def send_register_otp_endpoint(body: RegisterOtpRequest) -> dict:
+@limiter.limit("3/10 minutes")
+def send_register_otp_endpoint(request: Request, body: RegisterOtpRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
         raise HTTPException(
@@ -305,7 +352,8 @@ def send_register_otp_endpoint(body: RegisterOtpRequest) -> dict:
 
 
 @app.post("/auth/register")
-def register_endpoint(body: RegisterRequest) -> dict:
+@limiter.limit("5/hour")
+def register_endpoint(request: Request, body: RegisterRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
         raise HTTPException(
@@ -314,7 +362,21 @@ def register_endpoint(body: RegisterRequest) -> dict:
         )
 
     if not body.password:
-        raise HTTPException(status_code=400, detail="password required")
+        raise HTTPException(status_code=400, detail="Password is required")
+
+    errors = []
+    if len(body.password) < 8:
+        errors.append("must be at least 8 characters long")
+    if not any(c.isdigit() for c in body.password):
+        errors.append("must contain at least one number")
+    if not any(c.isalpha() for c in body.password):
+        errors.append("must contain at least one letter")
+
+    if errors:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Password validation failed: {', '.join(errors)}."
+        )
 
     # Verify registration OTP
     verification = get_register_verification_code(email)
@@ -351,7 +413,8 @@ def register_endpoint(body: RegisterRequest) -> dict:
 
 
 @app.post("/auth/login")
-def login_endpoint(body: LoginRequest) -> dict:
+@limiter.limit("10/15 minutes")
+def login_endpoint(request: Request, body: LoginRequest) -> dict:
     email = _normalize_email(str(body.email))
     try:
         user = get_user_auth_by_email(email)
@@ -368,11 +431,26 @@ def login_endpoint(body: LoginRequest) -> dict:
     if not is_valid:
         raise HTTPException(status_code=401, detail="bad email or password")
 
-    return {"success": True, "email": user["email"], "name": user["name"]}
+    expire = int(time.time()) + (7 * 24 * 3600)
+    token_payload = {
+        "id": user["id"],
+        "email": user["email"],
+        "exp": expire
+    }
+    token = jwt.encode(token_payload, JWT_SECRET, algorithm=ALGORITHM)
+
+    return {
+        "success": True,
+        "access_token": token,
+        "token_type": "bearer",
+        "email": user["email"],
+        "name": user["name"]
+    }
 
 
 @app.post("/auth/password-reset/request")
-def request_password_reset_endpoint(body: PasswordResetRequest) -> dict:
+@limiter.limit("3/10 minutes")
+def request_password_reset_endpoint(request: Request, body: PasswordResetRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
         raise HTTPException(status_code=400, detail="only @umd.edu mails allowed gang")
@@ -433,11 +511,7 @@ def confirm_password_reset_endpoint(body: PasswordResetConfirmRequest) -> dict:
 
 
 @app.post("/watchlist")
-def add_watchlist_endpoint(body: WatchlistRequest) -> dict:
-    user = get_user_by_email(body.email)
-    if not user:
-        raise HTTPException(status_code=404, detail="user not found")
-
+def add_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_current_user)) -> dict:
     course_id = _get_course_id_for_section(body.section_id)
 
     if is_watching_section(user["id"], body.section_id):
@@ -461,17 +535,24 @@ def add_watchlist_endpoint(body: WatchlistRequest) -> dict:
 
     return {
         "message": "watchlist entry added",
-        "email": body.email,
+        "email": user["email"],
         "section_id": body.section_id,
         "course_id": course_id,
     }
 
 
 @app.delete("/watchlist")
-def delete_watchlist_endpoint(body: WatchlistRequest) -> dict:
-    user = get_user_by_email(body.email)
-    if not user:
-        raise HTTPException(status_code=404, detail="user not found")
+def delete_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_current_user)) -> dict:
+    try:
+        emails_watching = get_users_watching(body.section_id)
+    except (psycopg2.Error, sqlite3.Error) as exc:
+        raise HTTPException(status_code=500, detail=f"database error checking watchlist ownership: {exc}") from exc
+
+    if not emails_watching:
+        raise HTTPException(status_code=404, detail="entry not found")
+
+    if user["email"] not in emails_watching:
+        raise HTTPException(status_code=403, detail="Forbidden: You do not own this watchlist entry")
 
     try:
         deleted = remove_watchlist_entry(user["id"], body.section_id)
@@ -481,19 +562,15 @@ def delete_watchlist_endpoint(body: WatchlistRequest) -> dict:
     if deleted == 0:
         raise HTTPException(status_code=404, detail="entry not found")
 
-    return {"message": "watchlist entry removed", "email": body.email, "section_id": body.section_id}
+    return {"message": "watchlist entry removed", "email": user["email"], "section_id": body.section_id}
 
 
-@app.get("/watchlist/{email}")
-def get_watchlist_endpoint(email: EmailStr) -> dict:
-    user = get_user_by_email(str(email))
-    if not user:
-        raise HTTPException(status_code=404, detail="user not found")
-
+@app.get("/watchlist")
+def get_watchlist_endpoint(user: dict = Depends(get_current_user)) -> dict:
     try:
         watchlist = get_watchlist_for_user(user["id"])
     except (psycopg2.Error, sqlite3.Error) as exc:
         raise HTTPException(status_code=500, detail=f"database error fetching watchlist: {exc}") from exc
 
-    return {"email": str(email), "watchlist": watchlist}
+    return {"email": user["email"], "watchlist": watchlist}
 
