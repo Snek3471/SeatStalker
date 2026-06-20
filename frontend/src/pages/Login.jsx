@@ -31,7 +31,7 @@ function Login() {
         password,
       })
 
-      login(normalizedEmail)
+      login(response.data?.access_token)
       localStorage.setItem(USER_NAME_STORAGE_KEY, response.data?.name || '')
       navigate('/dashboard', { replace: true })
     } catch (requestError) {

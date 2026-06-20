@@ -18,7 +18,10 @@ CREATE TABLE IF NOT EXISTS section_cache (
     section_id TEXT PRIMARY KEY,
     open_seats INTEGER,
     total_seats INTEGER,
-    last_checked TIMESTAMP DEFAULT NOW()
+    waitlist INTEGER,
+    is_available INTEGER NOT NULL DEFAULT 0,
+    last_checked TIMESTAMP DEFAULT NOW(),
+    last_notified_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS password_reset_codes (

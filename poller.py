@@ -1,24 +1,18 @@
-from datetime import datetime
-import os
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
-import requests
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 
 from db import (
-    get_cached_open_seats,
+    get_section_cache_entry,
+    get_users_watching,
     get_watched_sections,
     update_section_cache,
-    get_unnotified_users_for_section,
-    mark_watchlist_entry_notified,
-    reset_watchlist_alerts,
 )
 from scraper import get_sections
 from main import _send_email
 
 BATCH_SIZE = 50
-REGISTRATION_URL = "https://app.testudo.umd.edu/soc"
+NOTIFY_INTERVAL_MINUTES = 60
 
 load_dotenv()
 
@@ -35,7 +29,6 @@ def _fetch_sections_batch(section_ids: list[str]) -> list[dict]:
         return []
 
 
-
 def _to_int(value, default: int = 0) -> int:
     try:
         return int(value)
@@ -47,12 +40,38 @@ def _timestamp() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+def _parse_db_timestamp(value) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    return None
+
+
+def _section_is_available(open_seats: int, waitlist: int) -> bool:
+    return open_seats > 0 and waitlist == 0
+
+
+def _should_send_notification(last_notified_at) -> bool:
+    parsed = _parse_db_timestamp(last_notified_at)
+    if parsed is None:
+        return True
+    return datetime.now() - parsed >= timedelta(minutes=NOTIFY_INTERVAL_MINUTES)
+
+
 def _send_seat_alerts(section_id: str, open_seats: int, recipient_emails: list[str]) -> None:
     subject = f"Seat available in {section_id}"
     body = (
         f"gang\n"
         f"a seat available in {section_id}.\n"
         f"go grab it before someone else does: https://testudo.umd.edu/\n"
+        f"\n"
+        f"you'll keep getting this reminder every hour until the seat is gone or you unwatch it.\n"
         f"\n"
         f"your friendly neighborhood seat stalker\n"
         f"ps. better than the mckeldin one\n"
@@ -80,27 +99,36 @@ def main() -> None:
                 if not section_id:
                     continue
 
-                new_open_seats = _to_int(section.get("open_seats"))
+                open_seats = _to_int(section.get("open_seats"))
                 total_seats = _to_int(section.get("seats"))
+                waitlist = _to_int(section.get("waitlist"))
+                is_available = _section_is_available(open_seats, waitlist)
 
-                if new_open_seats > 0:
-                    # Get all users watching this section who haven't been notified yet
-                    unnotified = get_unnotified_users_for_section(section_id)
-                    if unnotified:
-                        emails = [item["email"] for item in unnotified]
-                        print(
-                            f"ALERT: {section_id} has {new_open_seats} seats. Notifying unnotified users: {', '.join(emails)}"
-                        )
-                        _send_seat_alerts(section_id, new_open_seats, emails)
+                cached = get_section_cache_entry(section_id)
+                last_notified_at = cached["last_notified_at"] if cached else None
 
-                        # Mark notified
-                        for item in unnotified:
-                            mark_watchlist_entry_notified(item["email"], section_id)
+                if is_available:
+                    if _should_send_notification(last_notified_at):
+                        recipient_emails = get_users_watching(section_id)
+                        if recipient_emails:
+                            print(
+                                f"ALERT: {section_id} is available "
+                                f"({open_seats} open, waitlist {waitlist}). "
+                                f"Notifying: {', '.join(recipient_emails)}"
+                            )
+                            _send_seat_alerts(section_id, open_seats, recipient_emails)
+                        last_notified_at = datetime.now()
                 else:
-                    # Reset alerts for this section so users get notified if a seat opens again
-                    reset_watchlist_alerts(section_id)
+                    last_notified_at = None
 
-                update_section_cache(section_id, new_open_seats, total_seats)
+                update_section_cache(
+                    section_id,
+                    open_seats,
+                    total_seats,
+                    waitlist,
+                    is_available,
+                    last_notified_at,
+                )
 
     except Exception as exc:
         print(f"[{_timestamp()}] ERROR: {exc}")

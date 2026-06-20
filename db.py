@@ -68,7 +68,10 @@ def _init_sqlite_schema() -> None:
             section_id TEXT PRIMARY KEY,
             open_seats INTEGER,
             total_seats INTEGER,
-            last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            waitlist INTEGER,
+            is_available INTEGER NOT NULL DEFAULT 0,
+            last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_notified_at TIMESTAMP
         );
         """,
         """
@@ -173,6 +176,35 @@ def _ensure_alert_sent_column_postgres() -> None:
         conn.commit()
 
 
+def _ensure_section_cache_columns_sqlite() -> None:
+    with _get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("PRAGMA table_info(section_cache)")
+            columns = {row[1] for row in cur.fetchall()}
+            if "waitlist" not in columns:
+                cur.execute("ALTER TABLE section_cache ADD COLUMN waitlist INTEGER")
+            if "is_available" not in columns:
+                cur.execute(
+                    "ALTER TABLE section_cache ADD COLUMN is_available INTEGER NOT NULL DEFAULT 0"
+                )
+            if "last_notified_at" not in columns:
+                cur.execute("ALTER TABLE section_cache ADD COLUMN last_notified_at TIMESTAMP")
+        conn.commit()
+
+
+def _ensure_section_cache_columns_postgres() -> None:
+    statements = [
+        "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS waitlist INTEGER;",
+        "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS is_available INTEGER NOT NULL DEFAULT 0;",
+        "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS last_notified_at TIMESTAMP;",
+    ]
+    with _get_connection() as conn:
+        with conn.cursor() as cur:
+            for statement in statements:
+                cur.execute(statement)
+        conn.commit()
+
+
 
 @contextmanager
 def _get_connection() -> Iterator:
@@ -241,9 +273,9 @@ def get_watched_sections() -> list[str]:
     return [row[0] for row in rows]
 
 
-def get_cached_open_seats(section_id: str) -> Optional[int]:
+def get_section_cache_entry(section_id: str) -> Optional[dict]:
     query = """
-        SELECT open_seats
+        SELECT open_seats, total_seats, waitlist, is_available, last_checked, last_notified_at
         FROM section_cache
         WHERE section_id = %s;
     """
@@ -251,32 +283,66 @@ def get_cached_open_seats(section_id: str) -> Optional[int]:
         with conn.cursor() as cur:
             cur.execute(query, (section_id,))
             row = cur.fetchone()
-    return row[0] if row else None
+
+    if not row:
+        return None
+
+    return {
+        "open_seats": row[0],
+        "total_seats": row[1],
+        "waitlist": row[2],
+        "is_available": bool(row[3]),
+        "last_checked": row[4],
+        "last_notified_at": row[5],
+    }
 
 
-def update_section_cache(section_id: str, open_seats: int, total_seats: int) -> None:
+def update_section_cache(
+    section_id: str,
+    open_seats: int,
+    total_seats: int,
+    waitlist: int,
+    is_available: bool,
+    last_notified_at=None,
+) -> None:
+    is_available_int = 1 if is_available else 0
     if _is_sqlite_mode():
         query = """
-            INSERT INTO section_cache (section_id, open_seats, total_seats, last_checked)
-            VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+            INSERT INTO section_cache (
+                section_id, open_seats, total_seats, waitlist, is_available,
+                last_checked, last_notified_at
+            )
+            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s)
             ON CONFLICT(section_id) DO UPDATE SET
                 open_seats = excluded.open_seats,
                 total_seats = excluded.total_seats,
-                last_checked = CURRENT_TIMESTAMP;
+                waitlist = excluded.waitlist,
+                is_available = excluded.is_available,
+                last_checked = CURRENT_TIMESTAMP,
+                last_notified_at = excluded.last_notified_at;
         """
     else:
         query = """
-            INSERT INTO section_cache (section_id, open_seats, total_seats, last_checked)
-            VALUES (%s, %s, %s, NOW())
+            INSERT INTO section_cache (
+                section_id, open_seats, total_seats, waitlist, is_available,
+                last_checked, last_notified_at
+            )
+            VALUES (%s, %s, %s, %s, %s, NOW(), %s)
             ON CONFLICT (section_id)
             DO UPDATE SET
                 open_seats = EXCLUDED.open_seats,
                 total_seats = EXCLUDED.total_seats,
-                last_checked = NOW();
+                waitlist = EXCLUDED.waitlist,
+                is_available = EXCLUDED.is_available,
+                last_checked = NOW(),
+                last_notified_at = EXCLUDED.last_notified_at;
         """
     with _get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(query, (section_id, open_seats, total_seats))
+            cur.execute(
+                query,
+                (section_id, open_seats, total_seats, waitlist, is_available_int, last_notified_at),
+            )
         conn.commit()
 
 
@@ -612,6 +678,10 @@ def _initialize_database() -> None:
             _ensure_alert_sent_column_sqlite()
         except sqlite3.Error:
             pass
+        try:
+            _ensure_section_cache_columns_sqlite()
+        except sqlite3.Error:
+            pass
         return
 
     try:
@@ -631,6 +701,11 @@ def _initialize_database() -> None:
 
     try:
         _ensure_alert_sent_column_postgres()
+    except (RuntimeError, psycopg2.Error):
+        pass
+
+    try:
+        _ensure_section_cache_columns_postgres()
     except (RuntimeError, psycopg2.Error):
         pass
 
