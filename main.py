@@ -4,20 +4,17 @@ import hashlib
 import os
 import secrets
 import time
-import smtplib
-from email.mime.text import MIMEText
 
 import bcrypt
 import psycopg2
 import requests
+import resend
 import sqlite3
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 from jose import jwt, JWTError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -149,53 +146,29 @@ def _normalize_email(email: str) -> str:
     return email.strip().lower()
 
 
-def _get_sendgrid_config() -> tuple[str | None, str | None]:
-    api_key = os.getenv("SENDGRID_API_KEY")
-    sender_email = os.getenv("SENDGRID_SENDER_EMAIL") or os.getenv("SENDER_EMAIL")
-    return api_key, sender_email
-
-
 def _send_email(to_email: str, subject: str, plain_text: str) -> None:
-    # 1. Try SMTP configuration
-    smtp_host = os.getenv("SMTP_HOST")
-    smtp_port = os.getenv("SMTP_PORT")
-    smtp_user = os.getenv("SMTP_USERNAME") or os.getenv("SMTP_USER")
-    smtp_pass = os.getenv("SMTP_PASSWORD") or os.getenv("SMTP_PASS")
-    smtp_sender = os.getenv("SMTP_SENDER_EMAIL") or os.getenv("SENDER_EMAIL")
+    api_key = os.getenv("RESEND_API_KEY")
+    sender_email = os.getenv("RESEND_SENDER_EMAIL")
 
-    if smtp_host and smtp_port and smtp_user and smtp_pass:
-        msg = MIMEText(plain_text)
-        msg["Subject"] = subject
-        msg["From"] = smtp_sender or smtp_user
-        msg["To"] = to_email
+    if not api_key or not sender_email:
+        print("\n=== EMAIL SENT (MOCKED) ===")
+        print(f"To: {to_email}")
+        print(f"Subject: {subject}")
+        print(f"Body:\n{plain_text}")
+        print("===========================\n")
+        return
 
-        try:
-            server = smtplib.SMTP(smtp_host, int(smtp_port), timeout=15)
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(msg["From"], [to_email], msg.as_string())
-            server.quit()
-            return
-        except Exception as exc:
-            raise RuntimeError(f"SMTP email send failed: {exc}")
-
-    # 2. Try SendGrid configuration
-    api_key, sender_email = _get_sendgrid_config()
-    if api_key and sender_email:
-        try:
-            message = Mail(from_email=sender_email, to_emails=to_email, subject=subject, plain_text_content=plain_text)
-            client = SendGridAPIClient(api_key)
-            client.send(message)
-            return
-        except Exception as exc:
-            print(f"\n[Warning] SendGrid email sending failed: {exc}. Falling back to console logging.")
-
-    # 3. Fallback to mock console logging
-    print("\n=== EMAIL SENT (MOCKED) ===")
-    print(f"To: {to_email}")
-    print(f"Subject: {subject}")
-    print(f"Body:\n{plain_text}")
-    print("===========================\n")
+    resend.api_key = api_key
+    try:
+        resend.Emails.send({
+            "from": sender_email,
+            "to": [to_email],
+            "subject": subject,
+            "text": plain_text,
+        })
+    except Exception as exc:
+        print(f"\n[Warning] Resend email sending failed: {exc}")
+        raise RuntimeError(f"Resend email send failed: {exc}") from exc
 
 
 def _generate_reset_otp() -> str:
