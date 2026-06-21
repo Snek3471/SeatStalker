@@ -185,7 +185,7 @@ def _password_reset_expiration_epoch() -> int:
 
 def _send_password_reset_email(email: str, otp: str) -> None:
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    reset_link = f"{frontend_url}/forgot-password?email={email}&token={otp}"
+    reset_link = f"{frontend_url.rstrip('/')}/forgot-password?email={email}&token={otp}"
     subject = "SeatStalker password reset link"
     body = (
         "Click the link below to reset your SeatStalker password:\n\n"
