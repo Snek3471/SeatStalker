@@ -9,6 +9,7 @@ function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState('input') // 'input' or 'verify'
   const [error, setError] = useState('')
@@ -23,8 +24,8 @@ function Register() {
     setSuccess('')
 
     const normalizedEmail = email.trim().toLowerCase()
-    const isUmdEmail = normalizedEmail.endsWith('@gmail.com')
-    if (!isUmdEmail) {
+    const isGmailEmail = normalizedEmail.endsWith('@gmail.com')
+    if (!isGmailEmail) {
       setError('Please use a valid @gmail.com email address.')
       return
     }
@@ -41,7 +42,7 @@ function Register() {
         email: normalizedEmail,
       })
       setStep('verify')
-      setSuccess('A verification code has been sent to your UMD email. (Remember to check your spam folder too!)')
+      setSuccess('A verification code has been sent to your email. (Remember to check your spam folder too!)')
     } catch (requestError) {
       setError(requestError?.response?.data?.detail || 'Failed to send verification code. Please try again.')
     } finally {
@@ -85,8 +86,8 @@ function Register() {
         </h1>
         <p className="mt-3 text-center text-sm font-bold text-[#d8d8d8]">
           {step === 'verify'
-            ? 'Enter the 6-digit verification code sent to your UMD email.'
-            : 'Use your UMD email to start tracking sections.'}
+            ? 'Enter the 6-digit verification code sent to your email.'
+            : 'Create an account to start tracking course sections.'}
         </p>
 
         <form onSubmit={step === 'verify' ? handleVerifyAndRegister : handleSendOtp} className="mt-8 space-y-6">
@@ -111,7 +112,6 @@ function Register() {
                 <label htmlFor="email" className="block text-lg font-black text-white">
                   Email
                 </label>
-                <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @gmail.com</p>
                 <input
                   id="email"
                   type="email"
@@ -129,7 +129,7 @@ function Register() {
                 </label>
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
@@ -144,7 +144,7 @@ function Register() {
                 </label>
                 <input
                   id="confirmPassword"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
@@ -152,6 +152,16 @@ function Register() {
                   required
                 />
               </div>
+
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-[#d8d8d8]">
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={(event) => setShowPassword(event.target.checked)}
+                  className="h-4 w-4 accent-white"
+                />
+                Show password
+              </label>
             </>
           ) : (
             <>

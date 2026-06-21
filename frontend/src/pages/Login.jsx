@@ -10,6 +10,7 @@ const USER_NAME_STORAGE_KEY = 'seatstalker_user_name'
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -52,7 +53,7 @@ function Login() {
           <h1 className="text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
             Welcome back
           </h1>
-          <p className="mt-3 text-sm font-bold text-[#d8d8d8]">Login with your UMD account</p>
+          <p className="mt-3 text-sm font-bold text-[#d8d8d8]">Sign in to your account</p>
         </div>
 
         {successMessage ? (
@@ -66,7 +67,6 @@ function Login() {
             <label htmlFor="email" className="block text-lg font-black text-white">
               Email
             </label>
-            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @gmail.com</p>
             <input
               id="email"
               type="email"
@@ -92,12 +92,21 @@ function Login() {
             </div>
             <input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none focus:border-white focus:ring-4 focus:ring-white/20"
               required
             />
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm font-bold text-[#d8d8d8]">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(event) => setShowPassword(event.target.checked)}
+                className="h-4 w-4 accent-white"
+              />
+              Show password
+            </label>
           </div>
 
           {error ? (
