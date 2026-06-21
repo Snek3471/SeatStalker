@@ -16,8 +16,8 @@ function RegisterPage() {
     setError('')
 
     const normalizedEmail = email.trim().toLowerCase()
-    if (!normalizedEmail.endsWith('@umd.edu')) {
-      setError('Please use a valid @umd.edu email address.')
+    if (!normalizedEmail.endsWith('@gmail.com')) {
+      setError('Please use a valid @gmail.com email address.')
       return
     }
 
@@ -64,7 +64,7 @@ function RegisterPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none ring-sky-200 focus:ring"
-            placeholder="example@umd.edu"
+            placeholder="example@gmail.com"
             required
           />
 

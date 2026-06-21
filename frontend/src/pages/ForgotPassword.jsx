@@ -25,8 +25,8 @@ function ForgotPassword() {
     setSuccess('')
 
     const normalizedEmail = email.trim().toLowerCase()
-    if (!normalizedEmail.endsWith('@umd.edu')) {
-      setError('Please use your @umd.edu email address.')
+    if (!normalizedEmail.endsWith('@gmail.com')) {
+      setError('Please use your @gmail.com email address.')
       return
     }
 
@@ -49,8 +49,8 @@ function ForgotPassword() {
     setSuccess('')
 
     const normalizedEmail = email.trim().toLowerCase()
-    if (!normalizedEmail.endsWith('@umd.edu')) {
-      setError('Please use your @umd.edu email address.')
+    if (!normalizedEmail.endsWith('@gmail.com')) {
+      setError('Please use your @gmail.com email address.')
       return
     }
 
@@ -88,7 +88,7 @@ function ForgotPassword() {
         <p className="mt-3 text-center text-sm font-bold text-[#d8d8d8]">
           {isResetMode
             ? 'Enter your new password below.'
-            : "We'll email a reset link to your registered @umd.edu address."}
+            : "We'll email a reset link to your registered @gmail.com address."}
         </p>
 
         <form onSubmit={isResetMode ? confirmReset : requestResetLink} className="mt-8 space-y-6">
@@ -96,7 +96,7 @@ function ForgotPassword() {
             <label htmlFor="email" className="block text-lg font-black text-white">
               Email
             </label>
-            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @umd.edu</p>
+            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @gmail.com</p>
             <input
               id="email"
               type="email"
@@ -104,7 +104,7 @@ function ForgotPassword() {
               onChange={(event) => setEmail(event.target.value)}
               disabled={isResetMode}
               className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20 disabled:bg-[#2b2b2b] disabled:text-[#bfbfbf]"
-              placeholder="yourname@umd.edu"
+              placeholder="yourname@gmail.com"
               required
             />
           </div>

@@ -66,14 +66,14 @@ function Login() {
             <label htmlFor="email" className="block text-lg font-black text-white">
               Email
             </label>
-            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @umd.edu</p>
+            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @gmail.com</p>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
-              placeholder="yourname@umd.edu"
+              placeholder="yourname@gmail.com"
               required
             />
           </div>
