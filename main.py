@@ -110,7 +110,7 @@ class PasswordResetConfirmRequest(BaseModel):
     new_password: str
 
 
-UMD_EMAIL_SUFFIX = "@umd.edu"
+ALLOWED_EMAIL_SUFFIX = "@gmail.com"
 PASSWORD_RESET_TTL_MINUTES = int(os.getenv("PASSWORD_RESET_TTL_MINUTES", "15"))
 PASSWORD_RESET_OTP_LENGTH = 6
 JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-default-key-for-development")
@@ -139,7 +139,7 @@ def get_current_user(http_auth: HTTPAuthorizationCredentials = Depends(reusable_
 
 def _is_umd_email(email: str) -> bool:
     normalized = email.lower()
-    return normalized.endswith(UMD_EMAIL_SUFFIX)
+    return normalized.endswith(ALLOWED_EMAIL_SUFFIX)
 
 
 def _normalize_email(email: str) -> str:
@@ -243,7 +243,7 @@ def _get_course_id_for_section(section_id: str) -> str:
 def create_user_endpoint(body: CreateUserRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
-        raise HTTPException(status_code=400, detail="only @umd.edu mails allowed gang")
+        raise HTTPException(status_code=400, detail="only @gmail.com mails allowed gang")
 
     try:
         user = create_user(email, body.name)
@@ -280,7 +280,7 @@ def send_register_otp_endpoint(request: Request, body: RegisterOtpRequest) -> di
     if not _is_umd_email(email):
         raise HTTPException(
             status_code=400,
-            detail="only @umd.edu mails allowed gang",
+            detail="only @gmail.com mails allowed gang",
         )
 
     # Check if user already exists
@@ -332,7 +332,7 @@ def register_endpoint(request: Request, body: RegisterRequest) -> dict:
     if not _is_umd_email(email):
         raise HTTPException(
             status_code=400,
-            detail="only @umd.edu mails allowed gang",
+            detail="only @gmail.com mails allowed gang",
         )
 
     if not body.password:
@@ -427,7 +427,7 @@ def login_endpoint(request: Request, body: LoginRequest) -> dict:
 def request_password_reset_endpoint(request: Request, body: PasswordResetRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
-        raise HTTPException(status_code=400, detail="only @umd.edu mails allowed gang")
+        raise HTTPException(status_code=400, detail="only @gmail.com mails allowed gang")
 
     # Check cooldown limit (30 seconds)
     reset_code = get_password_reset_code(email)
@@ -457,7 +457,7 @@ def request_password_reset_endpoint(request: Request, body: PasswordResetRequest
 def confirm_password_reset_endpoint(body: PasswordResetConfirmRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
-        raise HTTPException(status_code=400, detail="only @umd.edu mails allowed gang")
+        raise HTTPException(status_code=400, detail="only @gmail.com mails allowed gang")
 
     reset_code = get_password_reset_code(email)
     if not reset_code:
