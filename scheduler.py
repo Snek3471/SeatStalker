@@ -19,9 +19,9 @@ def run_poll_job() -> None:
 
 def main() -> None:
     scheduler = BlockingScheduler()
-    scheduler.add_job(run_poll_job, "interval", minutes=2, max_instances=1, coalesce=True)
+    scheduler.add_job(run_poll_job, "interval", seconds=60, max_instances=1, coalesce=True)
 
-    print(f"[{_timestamp()}] Scheduler started. Polling every 2 minutes.")
+    print(f"[{_timestamp()}] Scheduler started. Polling every 60 seconds.")
     run_poll_job()
     scheduler.start()
 
