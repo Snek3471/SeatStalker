@@ -96,14 +96,13 @@ function ForgotPassword() {
             <label htmlFor="email" className="block text-lg font-black text-white">
               Email
             </label>
-            <p className="mt-1 text-xs font-bold text-[#bfbfbf]">your @gmail.com</p>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               disabled={isResetMode}
-              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20 disabled:bg-[#2b2b2b] disabled:text-[#bfbfbf]"
+              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20 disabled:bg-[#2b2b2b] disabled:text-[#bfbfbf]"
               placeholder="yourname@gmail.com"
               required
             />
@@ -120,7 +119,7 @@ function ForgotPassword() {
                   type="password"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Enter a new password"
                   required
                 />
@@ -135,7 +134,7 @@ function ForgotPassword() {
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#9f9f9f] focus:border-white focus:ring-4 focus:ring-white/20"
+                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
                   placeholder="Re-enter your new password"
                   required
                 />
@@ -144,10 +143,10 @@ function ForgotPassword() {
           ) : null}
 
           {error ? (
-            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">{error}</p>
+            <p role="alert" aria-live="assertive" className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">{error}</p>
           ) : null}
           {success ? (
-            <p className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+            <p role="status" aria-live="polite" className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
               {success}
             </p>
           ) : null}
