@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS watchlist (
     section_id TEXT NOT NULL,
     course_id TEXT NOT NULL,
     added_at TIMESTAMP DEFAULT NOW(),
-    alert_sent INTEGER NOT NULL DEFAULT 0
+    notified_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS section_cache (
@@ -20,8 +20,7 @@ CREATE TABLE IF NOT EXISTS section_cache (
     total_seats INTEGER,
     waitlist INTEGER,
     is_available INTEGER NOT NULL DEFAULT 0,
-    last_checked TIMESTAMP DEFAULT NOW(),
-    last_notified_at TIMESTAMP
+    last_checked TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS password_reset_codes (

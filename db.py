@@ -60,7 +60,7 @@ def _init_sqlite_schema() -> None:
             section_id TEXT NOT NULL,
             course_id TEXT NOT NULL,
             added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            alert_sent INTEGER NOT NULL DEFAULT 0
+            notified_at TIMESTAMP
         );
         """,
         """
@@ -70,8 +70,7 @@ def _init_sqlite_schema() -> None:
             total_seats INTEGER,
             waitlist INTEGER,
             is_available INTEGER NOT NULL DEFAULT 0,
-            last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            last_notified_at TIMESTAMP
+            last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """,
         """
@@ -155,20 +154,20 @@ def _ensure_register_verification_codes_table() -> None:
         conn.commit()
 
 
-def _ensure_alert_sent_column_sqlite() -> None:
+def _ensure_notified_at_column_sqlite() -> None:
     with _get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("PRAGMA table_info(watchlist)")
             columns = [row[1] for row in cur.fetchall()]
-            if "alert_sent" not in columns:
-                cur.execute("ALTER TABLE watchlist ADD COLUMN alert_sent INTEGER NOT NULL DEFAULT 0")
+            if "notified_at" not in columns:
+                cur.execute("ALTER TABLE watchlist ADD COLUMN notified_at TIMESTAMP")
         conn.commit()
 
 
-def _ensure_alert_sent_column_postgres() -> None:
+def _ensure_notified_at_column_postgres() -> None:
     query = """
         ALTER TABLE watchlist
-        ADD COLUMN IF NOT EXISTS alert_sent INTEGER NOT NULL DEFAULT 0;
+        ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP;
     """
     with _get_connection() as conn:
         with conn.cursor() as cur:
@@ -187,8 +186,6 @@ def _ensure_section_cache_columns_sqlite() -> None:
                 cur.execute(
                     "ALTER TABLE section_cache ADD COLUMN is_available INTEGER NOT NULL DEFAULT 0"
                 )
-            if "last_notified_at" not in columns:
-                cur.execute("ALTER TABLE section_cache ADD COLUMN last_notified_at TIMESTAMP")
         conn.commit()
 
 
@@ -196,7 +193,6 @@ def _ensure_section_cache_columns_postgres() -> None:
     statements = [
         "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS waitlist INTEGER;",
         "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS is_available INTEGER NOT NULL DEFAULT 0;",
-        "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS last_notified_at TIMESTAMP;",
     ]
     with _get_connection() as conn:
         with conn.cursor() as cur:
@@ -275,7 +271,7 @@ def get_watched_sections() -> list[str]:
 
 def get_section_cache_entry(section_id: str) -> Optional[dict]:
     query = """
-        SELECT open_seats, total_seats, waitlist, is_available, last_checked, last_notified_at
+        SELECT open_seats, total_seats, waitlist, is_available, last_checked
         FROM section_cache
         WHERE section_id = %s;
     """
@@ -293,7 +289,6 @@ def get_section_cache_entry(section_id: str) -> Optional[dict]:
         "waitlist": row[2],
         "is_available": bool(row[3]),
         "last_checked": row[4],
-        "last_notified_at": row[5],
     }
 
 
@@ -303,45 +298,40 @@ def update_section_cache(
     total_seats: int,
     waitlist: int,
     is_available: bool,
-    last_notified_at=None,
 ) -> None:
     is_available_int = 1 if is_available else 0
     if _is_sqlite_mode():
         query = """
             INSERT INTO section_cache (
-                section_id, open_seats, total_seats, waitlist, is_available,
-                last_checked, last_notified_at
+                section_id, open_seats, total_seats, waitlist, is_available, last_checked
             )
-            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s)
+            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
             ON CONFLICT(section_id) DO UPDATE SET
                 open_seats = excluded.open_seats,
                 total_seats = excluded.total_seats,
                 waitlist = excluded.waitlist,
                 is_available = excluded.is_available,
-                last_checked = CURRENT_TIMESTAMP,
-                last_notified_at = excluded.last_notified_at;
+                last_checked = CURRENT_TIMESTAMP;
         """
     else:
         query = """
             INSERT INTO section_cache (
-                section_id, open_seats, total_seats, waitlist, is_available,
-                last_checked, last_notified_at
+                section_id, open_seats, total_seats, waitlist, is_available, last_checked
             )
-            VALUES (%s, %s, %s, %s, %s, NOW(), %s)
+            VALUES (%s, %s, %s, %s, %s, NOW())
             ON CONFLICT (section_id)
             DO UPDATE SET
                 open_seats = EXCLUDED.open_seats,
                 total_seats = EXCLUDED.total_seats,
                 waitlist = EXCLUDED.waitlist,
                 is_available = EXCLUDED.is_available,
-                last_checked = NOW(),
-                last_notified_at = EXCLUDED.last_notified_at;
+                last_checked = NOW();
         """
     with _get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 query,
-                (section_id, open_seats, total_seats, waitlist, is_available_int, last_notified_at),
+                (section_id, open_seats, total_seats, waitlist, is_available_int),
             )
         conn.commit()
 
@@ -612,36 +602,43 @@ def delete_register_verification_code(email: str) -> None:
         conn.commit()
 
 
-def get_unnotified_users_for_section(section_id: str) -> list[dict]:
+def get_watchers_with_notification_status(section_id: str) -> list[dict]:
     query = """
-        SELECT w.id, u.email
+        SELECT w.id, u.email, w.notified_at
         FROM watchlist w
         JOIN users u ON w.user_id = u.id
-        WHERE w.section_id = %s AND w.alert_sent = 0;
+        WHERE w.section_id = %s;
     """
     with _get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(query, (section_id,))
             rows = cur.fetchall()
-    return [{"watchlist_id": row[0], "email": row[1]} for row in rows]
+    return [{"watchlist_id": row[0], "email": row[1], "notified_at": row[2]} for row in rows]
 
 
-def mark_watchlist_entry_notified(email: str, section_id: str) -> None:
-    query = """
-        UPDATE watchlist
-        SET alert_sent = 1
-        WHERE user_id = (SELECT id FROM users WHERE email = %s) AND section_id = %s;
-    """
+def mark_watchlist_notified(watchlist_id: int) -> None:
+    if _is_sqlite_mode():
+        query = """
+            UPDATE watchlist
+            SET notified_at = CURRENT_TIMESTAMP
+            WHERE id = %s;
+        """
+    else:
+        query = """
+            UPDATE watchlist
+            SET notified_at = NOW()
+            WHERE id = %s;
+        """
     with _get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(query, (email, section_id))
+            cur.execute(query, (watchlist_id,))
         conn.commit()
 
 
-def reset_watchlist_alerts(section_id: str) -> None:
+def reset_watchlist_notifications(section_id: str) -> None:
     query = """
         UPDATE watchlist
-        SET alert_sent = 0
+        SET notified_at = NULL
         WHERE section_id = %s;
     """
     with _get_connection() as conn:
@@ -675,7 +672,7 @@ def _initialize_database() -> None:
         except sqlite3.Error:
             pass
         try:
-            _ensure_alert_sent_column_sqlite()
+            _ensure_notified_at_column_sqlite()
         except sqlite3.Error:
             pass
         try:
@@ -700,7 +697,7 @@ def _initialize_database() -> None:
         pass
 
     try:
-        _ensure_alert_sent_column_postgres()
+        _ensure_notified_at_column_postgres()
     except (RuntimeError, psycopg2.Error):
         pass
 

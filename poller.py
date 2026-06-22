@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 
 from db import (
     get_section_cache_entry,
-    get_users_watching,
     get_watched_sections,
+    get_watchers_with_notification_status,
+    mark_watchlist_notified,
+    reset_watchlist_notifications,
     update_section_cache,
 )
 from scraper import get_sections
@@ -39,33 +41,24 @@ def _timestamp() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-
 def _section_is_available(open_seats: int, waitlist: int) -> bool:
     return open_seats > 0 and waitlist == 0
 
 
-def _should_send_notification(last_notified_at) -> bool:
-    return last_notified_at is None
-
-
-def _send_seat_alerts(section_id: str, open_seats: int, recipient_emails: list[str]) -> None:
+def _send_seat_alert(section_id: str, recipient_email: str) -> None:
     subject = f"Seat available in {section_id}"
     body = (
         f"gang\n"
         f"a seat available in {section_id}.\n"
         f"go grab it before someone else does: https://testudo.umd.edu/\n"
         f"\n"
-        f"you'll keep getting this reminder every hour until the seat is gone or you unwatch it.\n"
-        f"\n"
         f"your friendly neighborhood seat stalker\n"
         f"ps. better than the mckeldin one\n"
     )
-
-    for recipient in recipient_emails:
-        try:
-            _send_email(recipient, subject, body)
-        except Exception as exc:
-            print(f"[{_timestamp()}] ERROR: Failed to send email to {recipient} for {section_id}: {exc}")
+    try:
+        _send_email(recipient_email, subject, body)
+    except Exception as exc:
+        print(f"[{_timestamp()}] ERROR: Failed to send email to {recipient_email} for {section_id}: {exc}")
 
 
 def main() -> None:
@@ -88,31 +81,22 @@ def main() -> None:
                 waitlist = _to_int(section.get("waitlist"))
                 is_available = _section_is_available(open_seats, waitlist)
 
-                cached = get_section_cache_entry(section_id)
-                last_notified_at = cached["last_notified_at"] if cached else None
-
                 if is_available:
-                    if _should_send_notification(last_notified_at):
-                        recipient_emails = get_users_watching(section_id)
-                        if recipient_emails:
-                            print(
-                                f"ALERT: {section_id} is available "
-                                f"({open_seats} open, waitlist {waitlist}). "
-                                f"Notifying: {', '.join(recipient_emails)}"
-                            )
-                            _send_seat_alerts(section_id, open_seats, recipient_emails)
-                        last_notified_at = datetime.now()
+                    watchers = get_watchers_with_notification_status(section_id)
+                    for watcher in watchers:
+                        if watcher["notified_at"] is not None:
+                            continue
+                        print(
+                            f"ALERT: {section_id} is available "
+                            f"({open_seats} open, waitlist {waitlist}). "
+                            f"Notifying: {watcher['email']}"
+                        )
+                        _send_seat_alert(section_id, watcher["email"])
+                        mark_watchlist_notified(watcher["watchlist_id"])
                 else:
-                    last_notified_at = None
+                    reset_watchlist_notifications(section_id)
 
-                update_section_cache(
-                    section_id,
-                    open_seats,
-                    total_seats,
-                    waitlist,
-                    is_available,
-                    last_notified_at,
-                )
+                update_section_cache(section_id, open_seats, total_seats, waitlist, is_available)
 
     except Exception as exc:
         print(f"[{_timestamp()}] ERROR: {exc}")
