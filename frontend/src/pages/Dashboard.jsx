@@ -134,7 +134,7 @@ function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen overflow-y-auto bg-black px-4 py-8 font-mono text-white sm:px-6 lg:px-8">
+    <main className="min-h-screen overflow-y-auto bg-black/60 px-4 py-8 font-mono text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-8 pb-10">
         <Navbar />
 

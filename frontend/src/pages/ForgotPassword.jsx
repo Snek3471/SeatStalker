@@ -80,7 +80,7 @@ function ForgotPassword() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+    <main className="flex min-h-screen items-center justify-center bg-black/60 px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
       <div className="w-full max-w-md border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060,-8px_-8px_0_#2d2d2d] sm:p-8">
         <h1 className="text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
           {isResetMode ? 'New password' : 'Reset password'}
