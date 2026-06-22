@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from dotenv import load_dotenv
 
@@ -12,7 +12,6 @@ from scraper import get_sections
 from main import _send_email
 
 BATCH_SIZE = 50
-NOTIFY_INTERVAL_MINUTES = 60
 
 load_dotenv()
 
@@ -40,28 +39,13 @@ def _timestamp() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def _parse_db_timestamp(value) -> datetime | None:
-    if value is None:
-        return None
-    if isinstance(value, datetime):
-        return value
-    if isinstance(value, str):
-        try:
-            return datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError:
-            return None
-    return None
-
 
 def _section_is_available(open_seats: int, waitlist: int) -> bool:
     return open_seats > 0 and waitlist == 0
 
 
 def _should_send_notification(last_notified_at) -> bool:
-    parsed = _parse_db_timestamp(last_notified_at)
-    if parsed is None:
-        return True
-    return datetime.now() - parsed >= timedelta(minutes=NOTIFY_INTERVAL_MINUTES)
+    return last_notified_at is None
 
 
 def _send_seat_alerts(section_id: str, open_seats: int, recipient_emails: list[str]) -> None:

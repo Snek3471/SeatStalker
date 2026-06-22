@@ -188,12 +188,12 @@ def _send_password_reset_email(email: str, otp: str) -> None:
     reset_link = f"{frontend_url.rstrip('/')}/forgot-password?email={email}&token={otp}"
     subject = "SeatStalker password reset link"
     body = (
-        "Click the link below to reset your SeatStalker password:\n\n"
+        "click the link below to reset your SeatStalker password:\n\n"
         f"{reset_link}\n\n"
-        f"This link expires in {PASSWORD_RESET_TTL_MINUTES} minutes.\n\n"
-        "Note: If you do not see the email, please check your spam folder.\n\n"
-        "Your friendly neighborhood seat stalker\n"
-        "PS: Better than the McKeldin one\n"
+        f"this link expires in {PASSWORD_RESET_TTL_MINUTES} minutes\n\n"
+        "always check your spam folder\n\n"
+        "your friendly neighborhood seat stalker\n"
+        "ps: better than the mcKeldin one\n"
     )
     _send_email(email, subject, body)
 
@@ -243,7 +243,7 @@ def _get_course_id_for_section(section_id: str) -> str:
 def create_user_endpoint(body: CreateUserRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
-        raise HTTPException(status_code=400, detail="only @gmail.com mails allowed gang")
+        raise HTTPException(status_code=400, detail="only @gmail.com mails allowed")
 
     try:
         user = create_user(email, body.name)
@@ -280,7 +280,7 @@ def send_register_otp_endpoint(request: Request, body: RegisterOtpRequest) -> di
     if not _is_umd_email(email):
         raise HTTPException(
             status_code=400,
-            detail="only @gmail.com mails allowed gang",
+            detail="only @gmail.com mails allowed",
         )
 
     # Check if user already exists
@@ -295,7 +295,7 @@ def send_register_otp_endpoint(request: Request, body: RegisterOtpRequest) -> di
         if time_since_creation < 30:
             raise HTTPException(
                 status_code=429,
-                detail=f"Please wait {30 - time_since_creation} seconds before requesting another verification code."
+                detail=f"chill {30 - time_since_creation} seconds before requesting another code"
             )
 
     # Generate 6-digit OTP code
@@ -309,12 +309,12 @@ def send_register_otp_endpoint(request: Request, body: RegisterOtpRequest) -> di
 
     subject = "SeatStalker registration verification code"
     body_text = (
-        "Use this code to verify your email and complete registration:\n\n"
+        "use this code to verify your email and complete registration:\n\n"
         f"{otp}\n\n"
-        "This code expires in 15 minutes.\n\n"
-        "Note: If you do not see the email, please check your spam folder.\n\n"
-        "Your friendly neighborhood seat stalker\n"
-        "PS: Better than the McKeldin one\n"
+        "This code expires in 15 minutes\n\n"
+        "always check your spam folder\n\n"
+        "your friendly neighborhood seat stalker\n"
+        "ps: better than the mcKeldin one\n"
     )
 
     try:
@@ -436,7 +436,7 @@ def request_password_reset_endpoint(request: Request, body: PasswordResetRequest
         if time_since_creation < 30:
             raise HTTPException(
                 status_code=429,
-                detail=f"Please wait {30 - time_since_creation} seconds before requesting another reset link."
+                detail=f"chill {30 - time_since_creation} seconds before requesting another reset link"
             )
 
     user = get_user_by_email(email)
