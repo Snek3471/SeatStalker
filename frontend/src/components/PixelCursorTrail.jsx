@@ -42,7 +42,8 @@ function PixelCursorTrail() {
 
   useEffect(() => {
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    if (!canHover) return undefined
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!canHover || prefersReducedMotion) return undefined
 
     window.addEventListener('mousemove', handleMouseMove)
     document.body.classList.add('pixel-cursor-active')
@@ -72,7 +73,7 @@ function PixelCursorTrail() {
   }, [handleMouseMove])
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
+    <div className="pixel-cursor-trail pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
       {pixels.map((pixel) => {
         const sizeMultiplier = Math.max(0.3, 1 - pixel.age / 100)
         const currentSize = PIXEL_SIZE * sizeMultiplier
