@@ -3,6 +3,9 @@ import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { API_URL } from '../config/api'
+import Button from '../components/ui/Button'
+import FormInput from '../components/ui/FormInput'
+import SectionCard from '../components/ui/SectionCard'
 
 function Register() {
   const [name, setName] = useState('')
@@ -44,7 +47,7 @@ function Register() {
       setStep('verify')
       setSuccess('A verification code has been sent to your email. (Remember to check your spam folder too!)')
     } catch (requestError) {
-      setError(requestError?.response?.data?.detail || 'Failed to send verification code. Please try again.')
+      setError(requestError?.response?.data?.detail || "Couldn't send the code. Try again.")
     } finally {
       setIsLoading(false)
     }
@@ -72,88 +75,72 @@ function Register() {
         state: { successMessage: 'Account created successfully. Please log in.' },
       })
     } catch (requestError) {
-      setError(requestError?.response?.data?.detail || 'Verification failed. Please try again.')
+      setError(requestError?.response?.data?.detail || 'Wrong code or it expired. Hit ← Back and request a new one.')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
-      <div className="w-full max-w-md border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060,-8px_-8px_0_#2d2d2d] sm:p-8">
-        <h1 className="text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+      <SectionCard className="w-full max-w-md shadow-pixel-auth sm:p-8">
+        <h1 className="text-balance text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
           {step === 'verify' ? 'Verify email' : 'Sign up'}
         </h1>
-        <p className="mt-3 text-center text-sm font-bold text-[#d8d8d8]">
+        <p className="mt-3 text-center text-sm font-bold text-ss-text">
           {step === 'verify'
             ? 'Enter the 6-digit verification code sent to your email.'
-            : 'Create an account to start tracking course sections.'}
+            : 'Beat the add/drop rush.'}
         </p>
 
         <form onSubmit={step === 'verify' ? handleVerifyAndRegister : handleSendOtp} className="mt-8 space-y-6">
           {step === 'input' ? (
             <>
-              <div>
-                <label htmlFor="name" className="block text-lg font-black text-white">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-                  placeholder="Terp Student"
-                  required
-                />
-              </div>
+              <FormInput
+                id="name"
+                label="Full Name"
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Terp Student"
+                autoComplete="name"
+                required
+              />
 
-              <div>
-                <label htmlFor="email" className="block text-lg font-black text-white">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-                  placeholder="yourname@gmail.com"
-                  required
-                />
-              </div>
+              <FormInput
+                id="email"
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="yourname@gmail.com"
+                autoComplete="email"
+                required
+              />
 
-              <div>
-                <label htmlFor="password" className="block text-lg font-black text-white">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
+              <FormInput
+                id="password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Enter password"
+                autoComplete="new-password"
+                required
+              />
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-lg font-black text-white">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-                  placeholder="Re-enter password"
-                  required
-                />
-              </div>
+              <FormInput
+                id="confirmPassword"
+                label="Confirm Password"
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Re-enter password"
+                autoComplete="new-password"
+                required
+              />
 
-              <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-[#d8d8d8]">
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-ss-text">
                 <input
                   type="checkbox"
                   checked={showPassword}
@@ -165,60 +152,52 @@ function Register() {
             </>
           ) : (
             <>
-              <div>
-                <label htmlFor="otp" className="block text-lg font-black text-white">
-                  Verification Code
-                </label>
-                <input
-                  id="otp"
-                  type="text"
-                  value={otp}
-                  onChange={(event) => setOtp(event.target.value)}
-                  className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-                  placeholder="Enter the 6-digit code"
-                  inputMode="numeric"
-                  required
-                />
-              </div>
+              <FormInput
+                id="otp"
+                label="Verification Code"
+                type="text"
+                value={otp}
+                onChange={(event) => setOtp(event.target.value)}
+                placeholder="Enter the 6-digit code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+              />
               <button
                 type="button"
                 onClick={() => setStep('input')}
-                className="text-sm font-black text-white underline underline-offset-4 hover:text-[#bfbfbf]"
+                className="rounded text-sm font-black text-white underline underline-offset-4 hover:text-ss-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               >
-                Back to registration details
+                ← Back
               </button>
             </>
           )}
 
           {error ? (
-            <p role="alert" aria-live="assertive" className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">{error}</p>
+            <p role="alert" aria-live="assertive" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">{error}</p>
           ) : null}
           {success ? (
-            <p role="status" aria-live="polite" className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+            <p role="status" aria-live="polite" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
               {success}
             </p>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full border-4 border-[#f5f5f5] bg-white px-4 py-3 text-base font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" fullWidth disabled={isLoading} aria-busy={isLoading}>
             {isLoading
-              ? 'Please wait...'
+              ? (step === 'verify' ? 'Creating account…' : 'Sending code…')
               : step === 'verify'
                 ? 'Verify & Register'
                 : 'Send Verification Code'}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-7 text-center text-sm font-black text-white">
           Already have an account?{' '}
-          <Link to="/login" className="underline underline-offset-4 hover:text-[#bfbfbf]">
+          <Link to="/login" className="underline underline-offset-4 hover:text-ss-muted">
             Log in
           </Link>
         </p>
-      </div>
+      </SectionCard>
     </main>
   )
 }

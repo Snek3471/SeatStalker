@@ -4,6 +4,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config/api'
+import Button from '../components/ui/Button'
+import FormInput from '../components/ui/FormInput'
+import SectionCard from '../components/ui/SectionCard'
 
 const USER_NAME_STORAGE_KEY = 'seatstalker_user_name'
 
@@ -39,7 +42,7 @@ function Login() {
       if (requestError?.response?.status === 401) {
         setError('Wrong email or password.')
       } else {
-        setError(requestError?.response?.data?.detail || 'Unable to log in. Please try again.')
+        setError(requestError?.response?.data?.detail || 'Login failed. Check your connection and try again.')
       }
     } finally {
       setIsLoading(false)
@@ -47,36 +50,32 @@ function Login() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
-      <div className="w-full max-w-md border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060,-8px_-8px_0_#2d2d2d] sm:p-8">
+    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+      <SectionCard className="w-full max-w-md shadow-pixel-auth sm:p-8">
         <div className="text-center">
-          <h1 className="text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+          <h1 className="text-balance text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
             Welcome back
           </h1>
-          <p className="mt-3 text-sm font-bold text-[#d8d8d8]">Sign in to your account</p>
+          <p className="mt-3 text-sm font-bold text-ss-text">Back on watch.</p>
         </div>
 
         {successMessage ? (
-          <p role="status" aria-live="polite" className="mt-5 border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+          <p role="status" aria-live="polite" className="mt-5 border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
             {successMessage}
           </p>
         ) : null}
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-lg font-black text-white">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-              placeholder="yourname@gmail.com"
-              required
-            />
-          </div>
+          <FormInput
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="yourname@gmail.com"
+            autoComplete="email"
+            required
+          />
 
           <div>
             <div className="flex items-center gap-4">
@@ -85,7 +84,7 @@ function Login() {
               </label>
               <Link
                 to="/forgot-password"
-                className="ml-auto text-xs font-black text-white underline underline-offset-4 hover:text-[#bfbfbf]"
+                className="ml-auto text-xs font-black text-white underline underline-offset-4 hover:text-ss-muted"
               >
                 Forgot password?
               </Link>
@@ -95,10 +94,11 @@ function Login() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-3 w-full border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none focus:border-white focus:ring-4 focus:ring-white/20"
+              autoComplete="current-password"
+              className="mt-3 w-full border-4 border-ss-rule bg-ss-inset px-4 py-3 text-base font-bold text-white shadow-pixel-md outline-none placeholder:text-ss-subtle focus:border-white focus:ring-4 focus:ring-white/20"
               required
             />
-            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm font-bold text-[#d8d8d8]">
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm font-bold text-ss-text">
               <input
                 type="checkbox"
                 checked={showPassword}
@@ -110,27 +110,23 @@ function Login() {
           </div>
 
           {error ? (
-            <p role="alert" aria-live="assertive" className="border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+            <p role="alert" aria-live="assertive" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
               {error}
             </p>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full border-4 border-[#f5f5f5] bg-white px-4 py-3 text-base font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
+          <Button type="submit" fullWidth disabled={isLoading} aria-busy={isLoading}>
+            {isLoading ? 'Logging in…' : 'Log in'}
+          </Button>
         </form>
 
         <p className="mt-7 text-center text-sm font-black text-white">
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="underline underline-offset-4 hover:text-[#bfbfbf]">
+          <Link to="/register" className="underline underline-offset-4 hover:text-ss-muted">
             Sign up
           </Link>
         </p>
-      </div>
+      </SectionCard>
     </main>
   )
 }

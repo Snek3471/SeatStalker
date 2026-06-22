@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
+import Button from '../components/ui/Button'
+import FormInput from '../components/ui/FormInput'
+import SectionCard from '../components/ui/SectionCard'
 import { API_URL } from '../config/api'
 
-const SECTION_HEADING_CLASS = 'text-2xl font-black uppercase leading-none tracking-normal text-white [text-shadow:2px_2px_0_#8b8b8b]'
+const SECTION_HEADING_CLASS = 'text-balance text-2xl font-black uppercase leading-none tracking-normal text-white [text-shadow:2px_2px_0_#8b8b8b]'
 
 function Spinner() {
   return (
@@ -56,7 +59,7 @@ function Dashboard() {
         navigate('/login', { replace: true })
         return
       }
-      setError(requestError?.response?.data?.detail || 'Failed to load your watchlist.')
+      setError(requestError?.response?.data?.detail || 'Failed to load your watchlist. Try refreshing.')
     } finally {
       setWatchlistLoading(false)
     }
@@ -84,7 +87,7 @@ function Dashboard() {
           : []
       setSections(nextSections)
       if (nextSections.length === 0) {
-        setMessage('No sections found for that course.')
+        setError('No sections found. Double-check the course ID (like CMSC131).')
       }
     } catch (requestError) {
       setSections([])
@@ -92,7 +95,7 @@ function Dashboard() {
         navigate('/login', { replace: true })
         return
       }
-      setError(requestError?.response?.data?.detail || 'Unable to search for that course right now.')
+      setError(requestError?.response?.data?.detail || 'Course search failed. Double-check the course ID.')
     } finally {
       setSearchLoading(false)
     }
@@ -116,7 +119,7 @@ function Dashboard() {
         navigate('/login', { replace: true })
         return
       }
-      setError(requestError?.response?.data?.detail || 'Failed to add section to watchlist.')
+      setError(requestError?.response?.data?.detail || "Couldn't add that section. Try again.")
     } finally {
       setActionLoadingId('')
     }
@@ -139,38 +142,38 @@ function Dashboard() {
         navigate('/login', { replace: true })
         return
       }
-      setError(requestError?.response?.data?.detail || 'Failed to remove section from watchlist.')
+      setError(requestError?.response?.data?.detail || "Couldn't remove that section. Try again.")
     } finally {
       setActionLoadingId('')
     }
   }
 
   return (
-    <main className="min-h-screen overflow-y-auto bg-black/60 px-4 py-8 font-mono text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-8 pb-10">
+    <main className="min-h-dvh overflow-y-auto bg-black px-4 py-12 font-mono text-white sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-10 pb-6">
         <Navbar />
 
-        <section aria-labelledby="dashboard-heading" className="border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060]">
+        <SectionCard as="section" aria-labelledby="dashboard-heading" className="shadow-pixel-xl sm:p-8">
           <h1 id="dashboard-heading" className={SECTION_HEADING_CLASS}>Dashboard</h1>
-          <p className="mt-3 text-sm font-bold text-[#d8d8d8]">
+          <p className="mt-3 text-sm font-bold text-ss-text">
             Logged in as{' '}
             <span className="break-all font-semibold">{user?.email}</span>
-            {userName ? <span className="ml-2 text-[#bfbfbf]">({userName})</span> : null}
+            {userName ? <span className="ml-2 text-ss-muted">({userName})</span> : null}
           </p>
 
           {message ? (
-            <p role="status" aria-live="polite" className="mt-4 border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+            <p role="status" aria-live="polite" className="mt-4 border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
               [ OK ] {message}
             </p>
           ) : null}
           {error ? (
-            <p role="alert" aria-live="assertive" className="mt-4 border-2 border-[#bfbfbf] bg-[#101010] px-3 py-2 text-xs font-bold text-white">
+            <p role="alert" aria-live="assertive" className="mt-4 border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
               [ ERR ] {error}
             </p>
           ) : null}
-        </section>
+        </SectionCard>
 
-        <section aria-labelledby="watchlist-heading" className="border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060]">
+        <SectionCard as="section" aria-labelledby="watchlist-heading" className="shadow-pixel-xl sm:p-7">
           <h2
             id="watchlist-heading"
             ref={watchlistHeadingRef}
@@ -179,76 +182,76 @@ function Dashboard() {
           >
             Your Watchlist
           </h2>
-          <p className="mt-2 text-sm font-bold text-[#d8d8d8]">These sections are checked automatically by the poller.</p>
+          <p className="mt-3 text-sm font-bold text-ss-text">Checked every 60 seconds. You get one email when a seat opens.</p>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-6 space-y-4">
             {watchlistLoading ? (
-              <div className="flex items-center gap-3 border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-6 text-sm font-bold text-white shadow-[6px_6px_0_#5f5f5f]">
+              <div className="flex items-center gap-3 border-4 border-ss-rule bg-ss-inset px-4 py-6 text-sm font-bold text-white shadow-pixel-md">
                 <Spinner />
                 <span>Loading your watchlist…</span>
               </div>
             ) : watchlist.length === 0 ? (
-              <p className="border-4 border-dashed border-[#8f8f8f] bg-[#1f1f1f] px-4 py-6 text-sm font-bold text-[#d8d8d8]">
-                Your watchlist is empty. Search a course below and click Watch to add sections.
+              <p className="border-4 border-dashed border-ss-rule bg-ss-inset px-4 py-6 text-sm font-bold text-ss-text">
+                Nothing on watch. Search a course below and hit Watch to start tracking.
               </p>
             ) : (
               watchlist.map((entry) => (
                 <article
                   key={`${entry.section_id}-${entry.added_at}`}
                   aria-label={`Watching ${entry.section_id}`}
-                  className="flex flex-col gap-4 border-4 border-[#8f8f8f] bg-[#1f1f1f] p-4 shadow-[6px_6px_0_#5f5f5f] md:flex-row md:items-center md:justify-between"
+                  className="flex flex-col gap-4 border-4 border-ss-rule bg-ss-inset p-4 sm:p-5 shadow-pixel-md md:flex-row md:items-center md:justify-between"
                 >
                   <div className="min-w-0">
                     <h3 className="truncate text-lg font-black text-white">{entry.section_id}</h3>
-                    <p className="text-sm font-bold text-[#d8d8d8]">Course: {entry.course_id}</p>
+                    <p className="text-sm font-bold text-ss-text">Course: {entry.course_id}</p>
                   </div>
 
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    shrink
                     onClick={() => handleRemove(entry.section_id)}
                     disabled={!!actionLoadingId}
                     aria-busy={actionLoadingId === entry.section_id}
                     aria-label={`Remove ${entry.section_id} from watchlist`}
-                    className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 border-4 border-[#f5f5f5] bg-white px-4 py-3 font-black text-[#111111] shadow-[4px_4px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {actionLoadingId === entry.section_id ? <Spinner /> : null}
                     Remove
-                  </button>
+                  </Button>
                 </article>
               ))
             )}
           </div>
-        </section>
+        </SectionCard>
 
-        <section aria-labelledby="search-heading" className="border-4 border-[#8a8a8a] bg-[#171717] p-6 shadow-[10px_10px_0_#606060]">
+        <SectionCard as="section" aria-labelledby="search-heading" className="shadow-pixel-xl">
           <h2 id="search-heading" className={SECTION_HEADING_CLASS}>Course Search</h2>
-          <p className="mt-2 text-sm font-bold text-[#d8d8d8]">Search a course ID like CMSC131 to see all available sections.</p>
+          <p className="mt-3 text-sm font-bold text-ss-text">Search a course ID like CMSC131 to see all available sections.</p>
 
-          <form onSubmit={handleSearch} className="mt-5 flex flex-col gap-3 md:flex-row">
-            <input
-              type="text"
+          <form onSubmit={handleSearch} className="mt-6 flex flex-col gap-3 md:flex-row">
+            <FormInput
+              aria-label="Course ID"
+              className="flex-1"
+              placeholder="CMSC131"
               value={searchCourseId}
               onChange={(event) => setSearchCourseId(event.target.value)}
-              className="flex-1 border-4 border-[#8f8f8f] bg-[#1f1f1f] px-4 py-3 text-base font-bold text-white shadow-[6px_6px_0_#5f5f5f] outline-none placeholder:text-[#b8b8b8] focus:border-white focus:ring-4 focus:ring-white/20"
-              placeholder="CMSC131"
-              aria-label="Course ID"
               autoComplete="off"
               required
             />
-            <button
+            <Button
               type="submit"
               disabled={searchLoading}
               aria-busy={searchLoading}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 border-4 border-[#f5f5f5] bg-white px-5 py-3 font-black text-[#111111] shadow-[6px_6px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
+              className="px-5"
             >
               {searchLoading ? <Spinner /> : null}
               {searchLoading ? 'Searching…' : 'Search'}
-            </button>
+            </Button>
           </form>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-8 space-y-4">
             {sections.length === 0 && !searchLoading ? (
-              <p className="border-4 border-dashed border-[#8f8f8f] bg-[#1f1f1f] px-4 py-6 text-sm font-bold text-[#d8d8d8]">
+              <p className="border-4 border-dashed border-ss-rule bg-ss-inset px-4 py-6 text-sm font-bold text-ss-text">
                 Search for a course to view its sections.
               </p>
             ) : null}
@@ -257,12 +260,12 @@ function Dashboard() {
               <article
                 key={section.section_id}
                 aria-label={`Section ${section.section_id}`}
-                className="border-4 border-[#8f8f8f] bg-[#1f1f1f] p-4 shadow-[6px_6px_0_#5f5f5f]"
+                className="border-4 border-ss-rule bg-ss-inset p-4 sm:p-5 shadow-pixel-md"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
                     <h3 className="text-lg font-black text-white">{section.section_id}</h3>
-                    <p className="mt-1 text-sm font-bold text-[#d8d8d8]">
+                    <p className="mt-1.5 text-sm font-bold text-ss-text">
                       <span className="text-white">Instructors:</span>{' '}
                       <span className="break-words">
                         {Array.isArray(section.instructors) && section.instructors.length > 0
@@ -270,31 +273,32 @@ function Dashboard() {
                           : 'TBA'}
                       </span>
                     </p>
-                    <p className="mt-1 text-sm font-bold text-[#d8d8d8]">
+                    <p className="mt-1 text-sm font-bold text-ss-text">
                       <span className="text-white">Meeting:</span> {formatMeeting(section)}
-                    </p>
-                    <p className="mt-1 text-sm font-bold text-[#d8d8d8]">
-                      <span className="text-white">Seats:</span> {section.seats ?? 'N/A'} |{' '}
+                      <span className="mx-2 text-ss-rule">·</span>
+                      <span className="text-white">Seats:</span> {section.seats ?? 'N/A'}
+                      <span className="mx-1.5 text-ss-rule">·</span>
                       <span className="text-white">Open:</span> {section.open_seats ?? 'N/A'}
                     </p>
                   </div>
 
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    shrink
                     onClick={() => handleWatch(section.section_id)}
                     disabled={!!actionLoadingId}
                     aria-busy={actionLoadingId === section.section_id}
                     aria-label={`Watch section ${section.section_id}`}
-                    className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 border-4 border-[#f5f5f5] bg-white px-4 py-3 font-black text-[#111111] shadow-[4px_4px_0_#8f8f8f] transition hover:-translate-y-0.5 hover:bg-[#dedede] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {actionLoadingId === section.section_id ? <Spinner /> : null}
                     Watch
-                  </button>
+                  </Button>
                 </div>
               </article>
             ))}
           </div>
-        </section>
+        </SectionCard>
       </div>
     </main>
   )
