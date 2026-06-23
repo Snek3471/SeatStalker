@@ -11,7 +11,7 @@ def _send_email(to_email: str, subject: str, plain_text: str) -> None:
         print("\n=== EMAIL SENT (MOCKED) ===")
         print(f"To: {to_email}")
         print(f"Subject: {subject}")
-        print(f"Body:\n{plain_text}")
+        print("[body redacted — contains OTP or reset token]")
         print("===========================\n")
         return
 
