@@ -10,7 +10,7 @@ const STEPS = [
   {
     num: '1',
     title: 'Search a course',
-    body: 'Enter a course ID — CMSC131, MATH141, BIOL101. See every open section with seat counts, instructors, and meeting times.',
+    body: 'Enter a course ID — CMSC131, MATH141, STAT400. See every open section with seat counts, instructors, and meeting times.',
   },
   {
     num: '2',
