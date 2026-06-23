@@ -154,8 +154,22 @@ function Landing() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────── */}
-      <footer className="border-t-4 border-ss-rule bg-ss-surface px-6 py-6 text-center text-xs font-bold text-ss-muted">
-        SeatStalker · UMD Course Seat Notifier · Not affiliated with the University of Maryland
+      <footer className="border-t-4 border-ss-rule bg-ss-surface px-6 py-8 text-center text-xs font-bold text-ss-muted">
+        <p>
+          Bugs? Feedback? Reach out —{' '}
+          <span className="text-white" title="Discord username: .snek_">Discord: .snek_</span>
+          <span className="mx-2">·</span>
+          <a
+            href="mailto:harshithsarma3471@gmail.com"
+            className="text-white underline underline-offset-2 hover:text-ss-muted"
+          >
+            harshithsarma3471@gmail.com
+          </a>
+          <span className="ml-2 text-ss-border">(Discord preferred)</span>
+        </p>
+        <p className="mt-3">
+          SeatStalker · UMD Course Seat Notifier · Not affiliated with the University of Maryland
+        </p>
       </footer>
 
     </div>
