@@ -52,7 +52,7 @@ def get_sections_from_testudo(course_id: str, semester: str) -> list[dict]:
     url = (
         f"{TESTUDO_URL}?courseId={course_id}"
         f"&sectionId=&termId={semester}"
-        "&_openSectionsOnly=on&creditCompare=%3E%3D&credits=0.0"
+        "&creditCompare=%3E%3D&credits=0.0"
         "&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on"
         "&_online=on&courseStartCompare=&courseStartHour=&courseStartMin="
         "&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM="
