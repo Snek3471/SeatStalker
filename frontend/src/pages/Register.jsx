@@ -117,6 +117,9 @@ function Register() {
                 autoComplete="email"
                 required
               />
+              <p className="text-xs font-bold text-ss-border">
+                Your email is only used to send seat alerts. Never shared.
+              </p>
 
               <FormInput
                 id="password"
