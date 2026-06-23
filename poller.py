@@ -11,7 +11,7 @@ from db import (
     update_section_cache,
 )
 from scraper import get_sections
-from main import _send_email
+from email_utils import _send_email
 
 BATCH_SIZE = 50
 
