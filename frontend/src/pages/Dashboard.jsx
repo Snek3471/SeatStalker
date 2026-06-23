@@ -307,10 +307,10 @@ function Dashboard() {
           <span className="text-white" title="Discord username: .snek_">Discord: .snek_</span>
           <span className="mx-2">·</span>
           <a
-            href="mailto:harshithsarma3471@gmail.com"
+            href="mailto:abetterstalker@gmail.com"
             className="text-white underline underline-offset-2 hover:text-ss-muted"
           >
-            harshithsarma3471@gmail.com
+            abetterstalker@gmail.com
           </a>
           <span className="ml-2 text-ss-border">(Discord preferred)</span>
         </p>
