@@ -53,7 +53,6 @@ def _send_seat_alert(section_id: str, recipient_email: str) -> None:
         f"go grab it before someone else does: https://testudo.umd.edu/\n"
         f"\n"
         f"your friendly neighborhood seat stalker\n"
-        f"ps. better than the mckeldin one\n"
     )
     try:
         _send_email(recipient_email, subject, body)
