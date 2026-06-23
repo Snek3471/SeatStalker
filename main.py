@@ -68,7 +68,7 @@ if frontend_url:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r"https://seatstalker[a-z0-9-]*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,7 +113,9 @@ class PasswordResetConfirmRequest(BaseModel):
 ALLOWED_EMAIL_SUFFIX = "@gmail.com"
 PASSWORD_RESET_TTL_MINUTES = int(os.getenv("PASSWORD_RESET_TTL_MINUTES", "15"))
 PASSWORD_RESET_OTP_LENGTH = 6
-JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-default-key-for-development")
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET environment variable must be set")
 ALGORITHM = "HS256"
 reusable_oauth2 = HTTPBearer()
 
@@ -454,7 +456,8 @@ def request_password_reset_endpoint(request: Request, body: PasswordResetRequest
 
 
 @app.post("/auth/password-reset/confirm")
-def confirm_password_reset_endpoint(body: PasswordResetConfirmRequest) -> dict:
+@limiter.limit("10/15 minutes")
+def confirm_password_reset_endpoint(request: Request, body: PasswordResetConfirmRequest) -> dict:
     email = _normalize_email(str(body.email))
     if not _is_umd_email(email):
         raise HTTPException(status_code=400, detail="only @gmail.com mails allowed gang")
