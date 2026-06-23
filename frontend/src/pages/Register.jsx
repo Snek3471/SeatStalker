@@ -38,6 +38,15 @@ function Register() {
       return
     }
 
+    const passwordErrors = []
+    if (password.length < 8) passwordErrors.push('at least 8 characters')
+    if (!/\d/.test(password)) passwordErrors.push('at least one number')
+    if (!/[a-zA-Z]/.test(password)) passwordErrors.push('at least one letter')
+    if (passwordErrors.length > 0) {
+      setError(`Password must have: ${passwordErrors.join(', ')}.`)
+      return
+    }
+
     setIsLoading(true)
 
     try {
