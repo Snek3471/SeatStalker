@@ -160,12 +160,21 @@ function Landing() {
           <span className="text-white" title="Discord username: .snek_">Discord: .snek_</span>
           <span className="mx-2">·</span>
           <a
-            href="mailto:harshithsarma3471@gmail.com"
+            href="mailto:abetterstalker@gmail.com"
             className="text-white underline underline-offset-2 hover:text-ss-muted"
           >
-            harshithsarma3471@gmail.com
+            abetterstalker@gmail.com
           </a>
           <span className="ml-2 text-ss-border">(Discord preferred)</span>
+        </p>
+        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link to="/privacy" className="underline underline-offset-2 hover:text-white">
+            Privacy Policy
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link to="/terms" className="underline underline-offset-2 hover:text-white">
+            Terms of Service
+          </Link>
         </p>
         <p className="mt-3">
           SeatStalker · UMD Course Seat Notifier · Not affiliated with the University of Maryland
