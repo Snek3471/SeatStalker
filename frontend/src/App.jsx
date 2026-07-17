@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import ProtectedRoute from './components/ProtectedRoute'
-import PixelCursorTrail from './components/PixelCursorTrail'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -30,7 +29,6 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <PixelCursorTrail />
     </>
   )
 }

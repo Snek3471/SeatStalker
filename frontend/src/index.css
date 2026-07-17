@@ -11,10 +11,8 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pixel-cursor-trail {
-    display: none !important;
-  }
+* {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M0 0 L0 12 L3.5 8.5 L6 13 L7.5 12.5 L5 7.5 L9 7.5 Z" fill="black" stroke="white" stroke-width="1"/></svg>') 0 0, auto;
 }
 
 input:-webkit-autofill,
@@ -24,11 +22,4 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #1f1f1f inset !important;
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  body.pixel-cursor-active,
-  body.pixel-cursor-active * {
-    cursor: none !important;
-  }
 }
