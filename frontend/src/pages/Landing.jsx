@@ -27,6 +27,7 @@ const STEPS = [
 
 function Landing() {
   return (
+    <>
     <div className="min-h-dvh bg-black font-mono text-white">
 
       {/* ── HERO ────────────────────────────────────────────────── */}
@@ -185,6 +186,7 @@ function Landing() {
     </div>
 
     <MigrationNotice />
+    </>
   )
 }
 
