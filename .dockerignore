@@ -3,3 +3,8 @@ fly.toml
 __pycache__/
 .envrc
 .venv/
+frontend/
+*.pyc
+*.pyo
+.env
+.env.*
