@@ -1,0 +1,14 @@
+app = 'seatstalker-poller'
+primary_region = 'iad'
+
+[build]
+  dockerfile = "Dockerfile.poller"
+
+[restart]
+  policy = 'always'
+  max_retries = 10
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
