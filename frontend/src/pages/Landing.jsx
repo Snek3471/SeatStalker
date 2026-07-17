@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import MigrationNotice from '../components/MigrationNotice'
 
 const CTA_PRIMARY =
   'inline-flex min-h-[44px] items-center justify-center gap-2 border-4 border-ss-btn-bd bg-white px-8 py-3 font-black text-ss-btn-fg shadow-pixel-btn transition hover:-translate-y-0.5 hover:bg-ss-btn-hov active:translate-y-0.5 active:shadow-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black'
@@ -182,6 +183,8 @@ function Landing() {
       </footer>
 
     </div>
+
+    <MigrationNotice />
   )
 }
 
