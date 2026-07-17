@@ -14,6 +14,26 @@ jobs:
         run: curl -L https://fly.io/install.sh | sh
       - name: Add flyctl to PATH
         run: echo "$HOME/.fly/bin" >> $GITHUB_PATH
-      - run: fly deploy --config fly.poller.toml --app seatstalker-poller --ha=false --no-config-merge
+      - name: Create app machine if none exist
+        run: |
+          MACHINE_COUNT=$(fly machines list --app seatstalker-poller --json 2>/dev/null | jq '. | length' || echo "0")
+          echo "Machine count: $MACHINE_COUNT"
+          if [ "$MACHINE_COUNT" = "0" ]; then
+            echo "No machines found, creating initial machine..."
+            fly machine run . \
+              --app seatstalker-poller \
+              --region iad \
+              --dockerfile Dockerfile.poller \
+              --vm-memory 256 \
+              --vm-cpus 1 \
+              --vm-cpu-kind shared \
+              --env DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              --env RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}" \
+              --env RESEND_SENDER_EMAIL="${{ secrets.RESEND_SENDER_EMAIL }}" \
+              --env JWT_SECRET="${{ secrets.JWT_SECRET }}"
+          else
+            echo "Machines exist, running normal deploy..."
+            fly deploy --config fly.poller.toml --app seatstalker-poller --ha=false
+          fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_POLLER }}
