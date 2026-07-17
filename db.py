@@ -1,26 +1,11 @@
 import os
-import sqlite3
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Iterator, Optional
 
 import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()
-
-SQLITE_DB_PATH = os.getenv(
-    "SQLITE_DB_PATH",
-    str(Path(__file__).resolve().parent / "seatstalker.db"),
-)
-
-
-def _is_sqlite_mode() -> bool:
-    if os.getenv("DATABASE_URL"):
-        return False
-
-    required_keys = ["DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"]
-    return all(not os.getenv(key) for key in required_keys)
 
 
 def _get_db_config() -> dict:
@@ -43,61 +28,14 @@ def _get_db_config() -> dict:
     }
 
 
-def _init_sqlite_schema() -> None:
-    statements = [
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            name TEXT,
-            password_hash TEXT
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS watchlist (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            section_id TEXT NOT NULL,
-            course_id TEXT NOT NULL,
-            added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            notified_at TIMESTAMP
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS section_cache (
-            section_id TEXT PRIMARY KEY,
-            open_seats INTEGER,
-            total_seats INTEGER,
-            waitlist INTEGER,
-            is_available INTEGER NOT NULL DEFAULT 0,
-            last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS password_reset_codes (
-            email TEXT PRIMARY KEY,
-            otp_hash TEXT NOT NULL,
-            expires_at INTEGER NOT NULL,
-            attempts INTEGER NOT NULL DEFAULT 0,
-            consumed_at INTEGER,
-            created_at INTEGER NOT NULL DEFAULT (unixepoch())
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS register_verification_codes (
-            email TEXT PRIMARY KEY,
-            otp_hash TEXT NOT NULL,
-            expires_at INTEGER NOT NULL,
-            attempts INTEGER NOT NULL DEFAULT 0,
-            created_at INTEGER NOT NULL DEFAULT (unixepoch())
-        );
-        """,
-    ]
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            for statement in statements:
-                cur.execute(statement)
-        conn.commit()
+@contextmanager
+def _get_connection() -> Iterator:
+    config = _get_db_config()
+    conn = psycopg2.connect(**config)
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 def _ensure_password_hash_column() -> None:
@@ -108,16 +46,6 @@ def _ensure_password_hash_column() -> None:
     with _get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(query)
-        conn.commit()
-
-
-def _ensure_password_hash_column_sqlite() -> None:
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("PRAGMA table_info(users)")
-            columns = [row[1] for row in cur.fetchall()]
-            if "password_hash" not in columns:
-                cur.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
         conn.commit()
 
 
@@ -154,17 +82,7 @@ def _ensure_register_verification_codes_table() -> None:
         conn.commit()
 
 
-def _ensure_notified_at_column_sqlite() -> None:
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("PRAGMA table_info(watchlist)")
-            columns = [row[1] for row in cur.fetchall()]
-            if "notified_at" not in columns:
-                cur.execute("ALTER TABLE watchlist ADD COLUMN notified_at TIMESTAMP")
-        conn.commit()
-
-
-def _ensure_notified_at_column_postgres() -> None:
+def _ensure_notified_at_column() -> None:
     query = """
         ALTER TABLE watchlist
         ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP;
@@ -175,21 +93,7 @@ def _ensure_notified_at_column_postgres() -> None:
         conn.commit()
 
 
-def _ensure_section_cache_columns_sqlite() -> None:
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("PRAGMA table_info(section_cache)")
-            columns = {row[1] for row in cur.fetchall()}
-            if "waitlist" not in columns:
-                cur.execute("ALTER TABLE section_cache ADD COLUMN waitlist INTEGER")
-            if "is_available" not in columns:
-                cur.execute(
-                    "ALTER TABLE section_cache ADD COLUMN is_available INTEGER NOT NULL DEFAULT 0"
-                )
-        conn.commit()
-
-
-def _ensure_section_cache_columns_postgres() -> None:
+def _ensure_section_cache_columns() -> None:
     statements = [
         "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS waitlist INTEGER;",
         "ALTER TABLE section_cache ADD COLUMN IF NOT EXISTS is_available INTEGER NOT NULL DEFAULT 0;",
@@ -201,59 +105,31 @@ def _ensure_section_cache_columns_postgres() -> None:
         conn.commit()
 
 
-
-@contextmanager
-def _get_connection() -> Iterator:
-    if _is_sqlite_mode():
-        conn = sqlite3.connect(SQLITE_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        try:
-            yield _SqliteConnection(conn)
-        finally:
-            conn.close()
-        return
-
-    config = _get_db_config()
-    conn = psycopg2.connect(**config)
+def _initialize_database() -> None:
     try:
-        yield conn
-    finally:
-        conn.close()
+        _ensure_password_hash_column()
+    except (RuntimeError, psycopg2.Error):
+        pass
 
+    try:
+        _ensure_password_reset_codes_table()
+    except (RuntimeError, psycopg2.Error):
+        pass
 
-class _SqliteCursor:
-    def __init__(self, cursor: sqlite3.Cursor) -> None:
-        self._cursor = cursor
+    try:
+        _ensure_register_verification_codes_table()
+    except (RuntimeError, psycopg2.Error):
+        pass
 
-    def execute(self, query: str, params: tuple | None = None) -> None:
-        self._cursor.execute(query.replace("%s", "?"), params or ())
+    try:
+        _ensure_notified_at_column()
+    except (RuntimeError, psycopg2.Error):
+        pass
 
-    def fetchall(self) -> list:
-        return self._cursor.fetchall()
-
-    def fetchone(self):
-        return self._cursor.fetchone()
-
-    @property
-    def rowcount(self) -> int:
-        return self._cursor.rowcount
-
-    def __enter__(self) -> "_SqliteCursor":
-        return self
-
-    def __exit__(self, exc_type, exc, tb) -> None:
-        self._cursor.close()
-
-
-class _SqliteConnection:
-    def __init__(self, conn: sqlite3.Connection) -> None:
-        self._conn = conn
-
-    def cursor(self) -> _SqliteCursor:
-        return _SqliteCursor(self._conn.cursor())
-
-    def commit(self) -> None:
-        self._conn.commit()
+    try:
+        _ensure_section_cache_columns()
+    except (RuntimeError, psycopg2.Error):
+        pass
 
 
 def get_watched_sections() -> list[str]:
@@ -300,33 +176,19 @@ def update_section_cache(
     is_available: bool,
 ) -> None:
     is_available_int = 1 if is_available else 0
-    if _is_sqlite_mode():
-        query = """
-            INSERT INTO section_cache (
-                section_id, open_seats, total_seats, waitlist, is_available, last_checked
-            )
-            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
-            ON CONFLICT(section_id) DO UPDATE SET
-                open_seats = excluded.open_seats,
-                total_seats = excluded.total_seats,
-                waitlist = excluded.waitlist,
-                is_available = excluded.is_available,
-                last_checked = CURRENT_TIMESTAMP;
-        """
-    else:
-        query = """
-            INSERT INTO section_cache (
-                section_id, open_seats, total_seats, waitlist, is_available, last_checked
-            )
-            VALUES (%s, %s, %s, %s, %s, NOW())
-            ON CONFLICT (section_id)
-            DO UPDATE SET
-                open_seats = EXCLUDED.open_seats,
-                total_seats = EXCLUDED.total_seats,
-                waitlist = EXCLUDED.waitlist,
-                is_available = EXCLUDED.is_available,
-                last_checked = NOW();
-        """
+    query = """
+        INSERT INTO section_cache (
+            section_id, open_seats, total_seats, waitlist, is_available, last_checked
+        )
+        VALUES (%s, %s, %s, %s, %s, NOW())
+        ON CONFLICT (section_id)
+        DO UPDATE SET
+            open_seats = EXCLUDED.open_seats,
+            total_seats = EXCLUDED.total_seats,
+            waitlist = EXCLUDED.waitlist,
+            is_available = EXCLUDED.is_available,
+            last_checked = NOW();
+    """
     with _get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -403,7 +265,6 @@ def add_watchlist_entry(user_id: int, section_id: str, course_id: str) -> None:
         with conn.cursor() as cur:
             cur.execute(query, (user_id, section_id, course_id))
         conn.commit()
-
 
 
 def remove_watchlist_entry(user_id: int, section_id: str) -> int:
@@ -617,18 +478,11 @@ def get_watchers_with_notification_status(section_id: str) -> list[dict]:
 
 
 def mark_watchlist_notified(watchlist_id: int) -> None:
-    if _is_sqlite_mode():
-        query = """
-            UPDATE watchlist
-            SET notified_at = CURRENT_TIMESTAMP
-            WHERE id = %s;
-        """
-    else:
-        query = """
-            UPDATE watchlist
-            SET notified_at = NOW()
-            WHERE id = %s;
-        """
+    query = """
+        UPDATE watchlist
+        SET notified_at = NOW()
+        WHERE id = %s;
+    """
     with _get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(query, (watchlist_id,))
@@ -662,50 +516,6 @@ def get_user_auth_by_email(email: str) -> Optional[dict]:
         return None
 
     return {"id": row[0], "email": row[1], "name": row[2], "password_hash": row[3]}
-
-
-def _initialize_database() -> None:
-    if _is_sqlite_mode():
-        _init_sqlite_schema()
-        try:
-            _ensure_password_hash_column_sqlite()
-        except sqlite3.Error:
-            pass
-        try:
-            _ensure_notified_at_column_sqlite()
-        except sqlite3.Error:
-            pass
-        try:
-            _ensure_section_cache_columns_sqlite()
-        except sqlite3.Error:
-            pass
-        return
-
-    try:
-        _ensure_password_hash_column()
-    except (RuntimeError, psycopg2.Error):
-        pass
-
-    try:
-        _ensure_password_reset_codes_table()
-    except (RuntimeError, psycopg2.Error):
-        pass
-
-    try:
-        _ensure_register_verification_codes_table()
-    except (RuntimeError, psycopg2.Error):
-        pass
-
-    try:
-        _ensure_notified_at_column_postgres()
-    except (RuntimeError, psycopg2.Error):
-        pass
-
-    try:
-        _ensure_section_cache_columns_postgres()
-    except (RuntimeError, psycopg2.Error):
-        pass
-
 
 
 _initialize_database()

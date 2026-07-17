@@ -8,7 +8,6 @@ import time
 import bcrypt
 import psycopg2
 import requests
-import sqlite3
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -225,9 +224,9 @@ def create_user_endpoint(body: CreateUserRequest) -> dict:
     try:
         user = create_user(email, body.name)
         return user
-    except (psycopg2.errors.UniqueViolation, sqlite3.IntegrityError) as exc:
+    except psycopg2.errors.UniqueViolation as exc:
         raise HTTPException(status_code=409, detail="already someone with this mail in our directory") from exc
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"Database error creating user: {exc}") from exc
 
 
@@ -353,11 +352,11 @@ def register_endpoint(request: Request, body: RegisterRequest) -> dict:
     try:
         create_user_with_password(body.name, email, password_hash)
         delete_register_verification_code(email)
-    except (psycopg2.errors.UniqueViolation, sqlite3.IntegrityError) as exc:
+    except psycopg2.errors.UniqueViolation as exc:
         raise HTTPException(status_code=409, detail="already someone with this mail in our directory") from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error creating user: {exc}") from exc
 
     return {"success": True, "message": "registration successful, come on in"}
@@ -371,7 +370,7 @@ def login_endpoint(request: Request, body: LoginRequest) -> dict:
         user = get_user_auth_by_email(email)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error during login: {exc}") from exc
 
     if not user or not user.get("password_hash"):
@@ -471,7 +470,7 @@ def add_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_curr
 
     try:
         watchlist = get_watchlist_for_user(user["id"])
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error fetching watchlist: {exc}") from exc
 
     if len(watchlist) >= 5:
@@ -482,7 +481,7 @@ def add_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_curr
 
     try:
         add_watchlist_entry(user["id"], body.section_id, course_id)
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error adding watchlist entry: {exc}") from exc
 
     return {
@@ -497,7 +496,7 @@ def add_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_curr
 def delete_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_current_user)) -> dict:
     try:
         emails_watching = get_users_watching(body.section_id)
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error checking watchlist ownership: {exc}") from exc
 
     if not emails_watching:
@@ -508,7 +507,7 @@ def delete_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_c
 
     try:
         deleted = remove_watchlist_entry(user["id"], body.section_id)
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error removing watchlist entry: {exc}") from exc
 
     if deleted == 0:
@@ -521,7 +520,7 @@ def delete_watchlist_endpoint(body: WatchlistRequest, user: dict = Depends(get_c
 def get_watchlist_endpoint(user: dict = Depends(get_current_user)) -> dict:
     try:
         watchlist = get_watchlist_for_user(user["id"])
-    except (psycopg2.Error, sqlite3.Error) as exc:
+    except psycopg2.Error as exc:
         raise HTTPException(status_code=500, detail=f"database error fetching watchlist: {exc}") from exc
 
     return {"email": user["email"], "watchlist": watchlist}
