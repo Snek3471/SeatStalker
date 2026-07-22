@@ -36,7 +36,6 @@ function SeatBadge({ open, total }) {
     >
       <p className="pf-label uppercase">Open</p>
       <p className="mt-1.5 pf-h3">{openNum !== null ? openNum : '—'}</p>
-      <p className="mt-1.5 pf-tiny">of {typeof total === 'number' ? total : '—'}</p>
     </div>
   )
 }
