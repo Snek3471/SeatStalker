@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 import MigrationNotice from '../components/MigrationNotice'
 
 const CTA_PRIMARY =
-  'inline-flex min-h-[44px] items-center justify-center gap-2 border-4 border-ss-btn-bd bg-white px-8 py-3 font-black text-ss-btn-fg shadow-pixel-btn transition hover:-translate-y-0.5 hover:bg-ss-btn-hov active:translate-y-0.5 active:shadow-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black'
+  'inline-flex min-h-[48px] items-center justify-center gap-2 border-4 border-ss-btn-bd bg-white px-8 py-3 text-[11px] uppercase tracking-wide text-ss-btn-fg shadow-pixel-btn transition-[transform,background-color,color,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-black hover:text-white active:translate-x-0 active:translate-y-0.5 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black'
 
 const CTA_SECONDARY =
-  'rounded font-black text-white underline underline-offset-4 hover:text-ss-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40'
+  'pf-body-sm uppercase text-white underline underline-offset-4 hover:text-ss-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40'
 
 const STEPS = [
   {
@@ -28,58 +28,54 @@ const STEPS = [
 function Landing() {
   return (
     <>
-    <div className="min-h-dvh bg-black font-mono text-white">
+    <div className="min-h-dvh bg-black text-white">
 
       {/* ── HERO ────────────────────────────────────────────────── */}
       <section className="flex min-h-dvh flex-col items-center justify-center px-4 py-16 text-center sm:px-6 lg:px-8">
-        <p className="mb-6 text-xs font-bold uppercase tracking-[0.25em] text-ss-border">
+        <p className="mb-7 pf-label uppercase text-ss-border">
           UMD · Course Seat Notifier
         </p>
 
-        <h1 className="text-balance text-4xl font-black uppercase leading-none text-white [text-shadow:5px_5px_0_#606060,_-2px_-2px_0_#2d2d2d] sm:text-6xl lg:text-7xl">
-          Seat Stalker
+        <h1 className="pf-hero text-balance uppercase text-white [text-shadow:5px_5px_0_#606060,_-2px_-2px_0_#2d2d2d]">
+          Seat<br className="sm:hidden" /> Stalker
         </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-balance text-base font-bold text-ss-text sm:text-lg">
+        <div className="mx-auto mt-8 pixel-divider max-w-[220px]" aria-hidden="true" />
+
+        <p className="mx-auto mt-8 max-w-xl text-balance pf-body text-ss-text">
           Never miss an open seat during add/drop. We watch your courses every 60 seconds and email you the moment one opens.
         </p>
 
         {/* Product preview — shows what users will actually see */}
-        <div
-          className="mx-auto mt-10 w-full max-w-sm select-none"
-          aria-hidden="true"
-        >
+        <div className="mx-auto mt-11 w-full max-w-sm select-none" aria-hidden="true">
           <div className="border-4 border-ss-border bg-ss-surface p-4 shadow-pixel-xl text-left">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-ss-border">Live example</p>
+            <p className="mb-3 pf-label uppercase text-ss-border">Live example</p>
             <div className="border-4 border-ss-rule bg-ss-inset p-4 shadow-pixel-md">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-black text-white">CMSC131-0101</p>
-                  <p className="mt-0.5 text-xs font-bold text-ss-text">
-                    Course: CMSC131
-                  </p>
-                  <p className="mt-0.5 text-xs font-bold text-ss-text">
-                    TuTh @ 9:30am ·{' '}
-                    <span className="text-white">1 seat open</span>
+                  <p className="pf-body-sm text-white">CMSC131-0101</p>
+                  <p className="mt-2 pf-tiny text-ss-text">TuTh @ 9:30am</p>
+                  <p className="mt-2 inline-block border-2 border-white bg-black px-2 py-1 pf-tiny text-white">
+                    1 SEAT OPEN
                   </p>
                 </div>
-                <div className="shrink-0 border-4 border-ss-btn-bd bg-white px-3 py-2 text-xs font-black text-ss-btn-fg shadow-pixel-btn-sm">
+                <div className="shrink-0 border-4 border-ss-btn-bd bg-white px-3 py-2 text-[9px] uppercase tracking-wide text-ss-btn-fg shadow-pixel-btn-sm">
                   Watch
                 </div>
               </div>
             </div>
-            <p className="mt-3 text-xs font-bold text-ss-border">
-              → You get an email in seconds.
+            <p className="mt-4 pf-tiny text-ss-border">
+              &gt; You get an email in seconds.
             </p>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
+        <div className="mt-11 flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
           <Link to="/register" className={CTA_PRIMARY}>
             Sign up free
           </Link>
           <Link to="/login" className={CTA_SECONDARY}>
-            Already have an account? Log in →
+            Already have an account? Log in &gt;
           </Link>
         </div>
       </section>
@@ -90,36 +86,34 @@ function Landing() {
         aria-labelledby="how-heading"
       >
         <div className="mx-auto max-w-3xl">
-          <h2
-            id="how-heading"
-            className="text-balance text-2xl font-black uppercase text-white [text-shadow:2px_2px_0_#8b8b8b]"
-          >
+          <h2 id="how-heading" className="pf-h2 text-balance uppercase text-white [text-shadow:2px_2px_0_#606060]">
             How it works
           </h2>
-          <p className="mt-2 text-sm font-bold text-ss-text">
+          <div className="mt-4 pixel-divider max-w-[160px]" aria-hidden="true" />
+          <p className="mt-5 pf-body-sm text-ss-text">
             Three steps. Two minutes to set up. Zero things to babysit.
           </p>
 
-          <ol className="mt-12" aria-label="Steps to use SeatStalker">
+          <ol className="mt-10" aria-label="Steps to use SeatStalker">
             {STEPS.map(({ num, title, body }, i) => (
               <li
                 key={num}
                 className={[
-                  'grid grid-cols-[2.5rem_1fr] gap-5 py-10 sm:grid-cols-[4.5rem_1fr] sm:gap-8',
-                  i > 0 ? 'border-t-4 border-ss-rule' : '',
+                  'grid grid-cols-[2.75rem_1fr] gap-5 py-9 sm:grid-cols-[5rem_1fr] sm:gap-8',
+                  i > 0 ? 'border-t-4 border-dashed border-ss-rule' : '',
                 ].join(' ')}
               >
                 <span
                   aria-hidden="true"
-                  className="select-none text-5xl font-black leading-none text-ss-border sm:text-7xl"
+                  className="select-none pf-hero leading-none text-ss-border [text-shadow:3px_3px_0_#2d2d2d]"
                 >
                   {num}
                 </span>
-                <div className="pt-1 sm:pt-2">
-                  <h3 className="text-balance text-lg font-black uppercase text-white [text-shadow:1px_1px_0_#8b8b8b] sm:text-xl">
+                <div className="min-w-0 pt-1">
+                  <h3 className="pf-h3 text-balance uppercase text-white [text-shadow:1px_1px_0_#606060]">
                     {title}
                   </h3>
-                  <p className="mt-2 max-w-prose text-sm font-bold leading-relaxed text-ss-text sm:text-base">
+                  <p className="mt-3 max-w-prose pf-body-sm text-ss-text">
                     {body}
                   </p>
                 </div>
@@ -135,20 +129,17 @@ function Landing() {
         aria-labelledby="cta-heading"
       >
         <div className="mx-auto max-w-2xl">
-          <h2
-            id="cta-heading"
-            className="text-balance text-2xl font-black uppercase text-white [text-shadow:2px_2px_0_#8b8b8b] sm:text-3xl"
-          >
+          <h2 id="cta-heading" className="pf-h2 text-balance uppercase text-white [text-shadow:2px_2px_0_#606060]">
             Beat the add/drop rush.
           </h2>
-          <p className="mx-auto mt-4 max-w-prose text-sm font-bold text-ss-text">
+          <p className="mx-auto mt-5 max-w-prose pf-body-sm text-ss-text">
             Free to use. Works with any UMD course. Requires a @gmail.com address.
           </p>
-          <div className="mt-8 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
+          <div className="mt-9 flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
             <Link to="/register" className={CTA_PRIMARY}>
               Sign up free
             </Link>
-            <Link to="/login" className={`${CTA_SECONDARY} text-sm`}>
+            <Link to="/login" className={CTA_SECONDARY}>
               Log in
             </Link>
           </div>
@@ -156,7 +147,7 @@ function Landing() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────── */}
-      <footer className="border-t-4 border-ss-rule bg-ss-surface px-6 py-8 text-center text-xs font-bold text-ss-muted">
+      <footer className="border-t-4 border-ss-rule bg-ss-surface px-6 py-9 text-center pf-tiny leading-loose text-ss-muted">
         <p>
           Bugs? Feedback? Reach out —{' '}
           <span className="text-white" title="Discord username: .snek_">Discord: .snek_</span>
@@ -169,7 +160,7 @@ function Landing() {
           </a>
           <span className="ml-2 text-ss-border">(Discord preferred)</span>
         </p>
-        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
           <Link to="/privacy" className="underline underline-offset-2 hover:text-white">
             Privacy Policy
           </Link>
@@ -178,7 +169,7 @@ function Landing() {
             Terms of Service
           </Link>
         </p>
-        <p className="mt-3">
+        <p className="mt-4">
           SeatStalker · UMD Course Seat Notifier · Not affiliated with the University of Maryland
         </p>
       </footer>

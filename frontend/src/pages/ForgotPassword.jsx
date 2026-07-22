@@ -83,12 +83,12 @@ function ForgotPassword() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 text-white sm:px-6 lg:px-8">
       <SectionCard className="w-full max-w-md shadow-pixel-auth sm:p-8">
-        <h1 className="text-balance text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+        <h1 className="pf-h2 text-balance text-center uppercase text-white [text-shadow:3px_3px_0_#606060]">
           {isResetMode ? 'New password' : 'Reset password'}
         </h1>
-        <p className="mt-3 text-center text-sm font-bold text-ss-text">
+        <p className="mt-4 text-center pf-body-sm text-ss-text">
           {isResetMode
             ? 'Enter your new password below.'
             : "We'll email a reset link to your registered @gmail.com address."}
@@ -134,20 +134,20 @@ function ForgotPassword() {
           ) : null}
 
           {error ? (
-            <p role="alert" aria-live="assertive" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">{error}</p>
+            <p role="alert" aria-live="assertive" className="border-4 border-white bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">[ ERR ] {error}</p>
           ) : null}
           {success ? (
-            <p role="status" aria-live="polite" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
-              {success}
+            <p role="status" aria-live="polite" className="border-4 border-ss-rule bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">
+              [ OK ] {success}
             </p>
           ) : null}
 
           <Button type="submit" fullWidth disabled={isLoading} aria-busy={isLoading}>
-            {isLoading ? (isResetMode ? 'Resetting…' : 'Sending link…') : isResetMode ? 'Reset Password' : 'Send Reset Link'}
+            {isLoading ? (isResetMode ? 'Resetting…' : 'Sending…') : isResetMode ? 'Reset Password' : 'Send Reset Link'}
           </Button>
         </form>
 
-        <p className="mt-7 text-center text-sm font-black text-white">
+        <p className="mt-8 text-center pf-body-sm text-white">
           <Link to="/login" className="underline underline-offset-4 hover:text-ss-muted">
             Back to login
           </Link>

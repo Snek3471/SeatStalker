@@ -82,7 +82,7 @@ export default function MigrationNotice() {
               onClick={dismiss}
               className="text-xs font-black text-white underline underline-offset-2 hover:text-ss-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
-              go to dashboard →
+              go to dashboard &gt;
             </Link>
           </div>
         </motion.div>

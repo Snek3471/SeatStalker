@@ -91,14 +91,14 @@ function Register() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 text-white sm:px-6 lg:px-8">
       <SectionCard className="w-full max-w-md shadow-pixel-auth sm:p-8">
-        <h1 className="text-balance text-center text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+        <h1 className="pf-h2 text-balance text-center uppercase text-white [text-shadow:3px_3px_0_#606060]">
           {step === 'verify' ? 'Verify email' : 'Sign up'}
         </h1>
-        <p className="mt-3 text-center text-sm font-bold text-ss-text">
+        <p className="mt-4 text-center pf-body-sm text-ss-text">
           {step === 'verify'
-            ? 'Enter the 6-digit verification code sent to your email.'
+            ? 'Enter the 6-digit code sent to your email.'
             : 'Beat the add/drop rush.'}
         </p>
 
@@ -126,7 +126,7 @@ function Register() {
                 autoComplete="email"
                 required
               />
-              <p className="text-xs font-bold text-ss-border">
+              <p className="pf-tiny text-ss-border">
                 Your email is only used to send seat alerts. Never shared.
               </p>
 
@@ -152,12 +152,12 @@ function Register() {
                 required
               />
 
-              <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-ss-text">
+              <label className="inline-flex cursor-pointer items-center gap-2 border-2 border-ss-rule bg-ss-inset px-3 py-2 pf-label uppercase text-ss-text hover:border-white">
                 <input
                   type="checkbox"
                   checked={showPassword}
                   onChange={(event) => setShowPassword(event.target.checked)}
-                  className="h-4 w-4 accent-white"
+                  className="h-3.5 w-3.5 appearance-none border-2 border-ss-rule bg-ss-deep checked:border-white checked:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                 />
                 Show password
               </label>
@@ -178,7 +178,7 @@ function Register() {
               <button
                 type="button"
                 onClick={() => setStep('input')}
-                className="rounded text-sm font-black text-white underline underline-offset-4 hover:text-ss-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                className="pf-label uppercase text-white underline underline-offset-4 hover:text-ss-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               >
                 ← Back
               </button>
@@ -186,24 +186,24 @@ function Register() {
           )}
 
           {error ? (
-            <p role="alert" aria-live="assertive" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">{error}</p>
+            <p role="alert" aria-live="assertive" className="border-4 border-white bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">[ ERR ] {error}</p>
           ) : null}
           {success ? (
-            <p role="status" aria-live="polite" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
-              {success}
+            <p role="status" aria-live="polite" className="border-4 border-ss-rule bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">
+              [ OK ] {success}
             </p>
           ) : null}
 
           <Button type="submit" fullWidth disabled={isLoading} aria-busy={isLoading}>
             {isLoading
-              ? (step === 'verify' ? 'Creating account…' : 'Sending code…')
+              ? (step === 'verify' ? 'Creating…' : 'Sending…')
               : step === 'verify'
                 ? 'Verify & Register'
-                : 'Send Verification Code'}
+                : 'Send Code'}
           </Button>
         </form>
 
-        <p className="mt-7 text-center text-sm font-black text-white">
+        <p className="mt-8 text-center pf-body-sm text-white">
           Already have an account?{' '}
           <Link to="/login" className="underline underline-offset-4 hover:text-ss-muted">
             Log in
