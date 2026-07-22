@@ -9,14 +9,35 @@ import FormInput from '../components/ui/FormInput'
 import SectionCard from '../components/ui/SectionCard'
 import { API_URL } from '../config/api'
 
-const SECTION_HEADING_CLASS = 'text-balance text-2xl font-black uppercase leading-none tracking-normal text-white [text-shadow:2px_2px_0_#8b8b8b]'
+const SECTION_HEADING_CLASS = 'pf-h2 text-balance uppercase text-white [text-shadow:2px_2px_0_#606060]'
 
 function Spinner() {
   return (
     <span role="status" className="inline-flex shrink-0 items-center">
-      <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+      {/* Stepped square loader — reads as a pixel-game spinner, not a smooth ring. */}
+      <span
+        className="h-4 w-4 animate-spin border-2 border-current border-t-transparent [animation-timing-function:steps(8)]"
+        aria-hidden="true"
+      />
       <span className="sr-only">Loading…</span>
     </span>
+  )
+}
+
+function SeatBadge({ open, total }) {
+  const openNum = typeof open === 'number' ? open : null
+  const hasOpen = openNum !== null && openNum > 0
+  return (
+    <div
+      className={[
+        'shrink-0 border-4 px-3 py-2 text-center shadow-pixel-btn-sm',
+        hasOpen ? 'border-white bg-white text-ss-btn-fg' : 'border-ss-rule bg-ss-deep text-ss-muted',
+      ].join(' ')}
+    >
+      <p className="pf-label uppercase">Open</p>
+      <p className="mt-1.5 pf-h3">{openNum !== null ? openNum : '—'}</p>
+      <p className="mt-1.5 pf-tiny">of {typeof total === 'number' ? total : '—'}</p>
+    </div>
   )
 }
 
@@ -149,25 +170,25 @@ function Dashboard() {
   }
 
   return (
-    <main className="min-h-dvh overflow-y-auto bg-black px-4 py-12 font-mono text-white sm:px-6 lg:px-8">
+    <main className="min-h-dvh overflow-y-auto bg-black px-4 py-12 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-10 pb-6">
         <Navbar />
 
         <SectionCard as="section" aria-labelledby="dashboard-heading" className="shadow-pixel-xl sm:p-8">
           <h1 id="dashboard-heading" className={SECTION_HEADING_CLASS}>Dashboard</h1>
-          <p className="mt-3 text-sm font-bold text-ss-text">
+          <p className="mt-4 pf-body-sm text-ss-text">
             Logged in as{' '}
-            <span className="break-all font-semibold">{user?.email}</span>
+            <span className="break-all text-white">{user?.email}</span>
             {userName ? <span className="ml-2 text-ss-muted">({userName})</span> : null}
           </p>
 
           {message ? (
-            <p role="status" aria-live="polite" className="mt-4 border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
+            <p role="status" aria-live="polite" className="mt-5 border-4 border-ss-rule bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">
               [ OK ] {message}
             </p>
           ) : null}
           {error ? (
-            <p role="alert" aria-live="assertive" className="mt-4 border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
+            <p role="alert" aria-live="assertive" className="mt-5 border-4 border-white bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">
               [ ERR ] {error}
             </p>
           ) : null}
@@ -182,18 +203,20 @@ function Dashboard() {
           >
             Your Watchlist
           </h2>
-          <p className="mt-3 text-sm font-bold text-ss-text">Checked every 60 seconds. You get one email when a seat opens.</p>
+          <p className="mt-4 pf-body-sm text-ss-text">Checked every 60 seconds. You get one email when a seat opens.</p>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-7 space-y-4">
             {watchlistLoading ? (
-              <div className="flex items-center gap-3 border-4 border-ss-rule bg-ss-inset px-4 py-6 text-sm font-bold text-white shadow-pixel-md">
+              <div className="flex items-center gap-3 border-4 border-ss-rule bg-ss-inset px-4 py-6 pf-body-sm text-white shadow-pixel-md">
                 <Spinner />
                 <span>Loading your watchlist…</span>
               </div>
             ) : watchlist.length === 0 ? (
-              <p className="border-4 border-dashed border-ss-rule bg-ss-inset px-4 py-6 text-sm font-bold text-ss-text">
-                Nothing on watch. Search a course below and hit Watch to start tracking.
-              </p>
+              <div className="border-4 border-dashed border-ss-rule bg-ss-inset px-4 py-9 text-center">
+                <p className="inline-block border-2 border-ss-rule px-3 py-1 pf-label uppercase text-ss-border">Empty</p>
+                <p className="mt-5 pf-body-sm text-ss-text">Nothing on watch yet.</p>
+                <p className="mt-3 pf-tiny text-ss-muted">Search a course below and hit WATCH to start tracking.</p>
+              </div>
             ) : (
               watchlist.map((entry) => (
                 <article
@@ -202,8 +225,8 @@ function Dashboard() {
                   className="flex flex-col gap-4 border-4 border-ss-rule bg-ss-inset p-4 sm:p-5 shadow-pixel-md md:flex-row md:items-center md:justify-between"
                 >
                   <div className="min-w-0">
-                    <h3 className="truncate text-lg font-black text-white">{entry.section_id}</h3>
-                    <p className="text-sm font-bold text-ss-text">Course: {entry.course_id}</p>
+                    <h3 className="truncate pf-h3 text-white">{entry.section_id}</h3>
+                    <p className="mt-2 pf-body-sm text-ss-text">Course: {entry.course_id}</p>
                   </div>
 
                   <Button
@@ -226,9 +249,9 @@ function Dashboard() {
 
         <SectionCard as="section" aria-labelledby="search-heading" className="shadow-pixel-xl">
           <h2 id="search-heading" className={SECTION_HEADING_CLASS}>Course Search</h2>
-          <p className="mt-3 text-sm font-bold text-ss-text">Search a course ID like CMSC131 to see all available sections.</p>
+          <p className="mt-4 pf-body-sm text-ss-text">Search a course ID like CMSC131 to see all available sections.</p>
 
-          <form onSubmit={handleSearch} className="mt-6 flex flex-col gap-3 md:flex-row">
+          <form onSubmit={handleSearch} className="mt-7 flex flex-col gap-3 md:flex-row">
             <FormInput
               aria-label="Course ID"
               className="flex-1"
@@ -251,9 +274,11 @@ function Dashboard() {
 
           <div className="mt-8 space-y-4">
             {sections.length === 0 && !searchLoading ? (
-              <p className="border-4 border-dashed border-ss-rule bg-ss-inset px-4 py-6 text-sm font-bold text-ss-text">
-                Search for a course to view its sections.
-              </p>
+              <div className="border-4 border-dashed border-ss-rule bg-ss-inset px-4 py-9 text-center">
+                <p className="inline-block border-2 border-ss-rule px-3 py-1 pf-label uppercase text-ss-border">No results</p>
+                <p className="mt-5 pf-body-sm text-ss-text">Search a course to view its sections.</p>
+                <p className="mt-3 pf-tiny text-ss-muted">Try a course ID like CMSC131 or MATH141.</p>
+              </div>
             ) : null}
 
             {sections.map((section) => (
@@ -262,38 +287,37 @@ function Dashboard() {
                 aria-label={`Section ${section.section_id}`}
                 className="border-4 border-ss-rule bg-ss-inset p-4 sm:p-5 shadow-pixel-md"
               >
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
-                    <h3 className="text-lg font-black text-white">{section.section_id}</h3>
-                    <p className="mt-1.5 text-sm font-bold text-ss-text">
-                      <span className="text-white">Instructors:</span>{' '}
+                    <h3 className="pf-h3 text-white">{section.section_id}</h3>
+                    <p className="mt-3 pf-body-sm text-ss-text">
+                      <span className="text-white">Instructor</span>{' — '}
                       <span className="break-words">
                         {Array.isArray(section.instructors) && section.instructors.length > 0
                           ? section.instructors.join(', ')
                           : 'TBA'}
                       </span>
                     </p>
-                    <p className="mt-1 text-sm font-bold text-ss-text">
-                      <span className="text-white">Meeting:</span> {formatMeeting(section)}
-                      <span className="mx-2 text-ss-rule">·</span>
-                      <span className="text-white">Seats:</span> {section.seats ?? 'N/A'}
-                      <span className="mx-1.5 text-ss-rule">·</span>
-                      <span className="text-white">Open:</span> {section.open_seats ?? 'N/A'}
+                    <p className="mt-2 pf-body-sm text-ss-text">
+                      <span className="text-white">Meets</span>{' — '}{formatMeeting(section)}
                     </p>
                   </div>
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    shrink
-                    onClick={() => handleWatch(section.section_id)}
-                    disabled={!!actionLoadingId}
-                    aria-busy={actionLoadingId === section.section_id}
-                    aria-label={`Watch section ${section.section_id}`}
-                  >
-                    {actionLoadingId === section.section_id ? <Spinner /> : null}
-                    Watch
-                  </Button>
+                  <div className="flex items-center gap-3 md:flex-col md:items-stretch md:gap-3">
+                    <SeatBadge open={section.open_seats} total={section.seats} />
+                    <Button
+                      type="button"
+                      size="sm"
+                      shrink
+                      onClick={() => handleWatch(section.section_id)}
+                      disabled={!!actionLoadingId}
+                      aria-busy={actionLoadingId === section.section_id}
+                      aria-label={`Watch section ${section.section_id}`}
+                    >
+                      {actionLoadingId === section.section_id ? <Spinner /> : null}
+                      Watch
+                    </Button>
+                  </div>
                 </div>
               </article>
             ))}

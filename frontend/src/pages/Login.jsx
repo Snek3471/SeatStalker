@@ -50,18 +50,18 @@ function Login() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 font-mono text-white sm:px-6 lg:px-8">
+    <main className="flex min-h-dvh items-center justify-center bg-black px-4 py-10 text-white sm:px-6 lg:px-8">
       <SectionCard className="w-full max-w-md shadow-pixel-auth sm:p-8">
         <div className="text-center">
-          <h1 className="text-balance text-3xl font-black uppercase tracking-normal text-white [text-shadow:3px_3px_0_#8b8b8b]">
+          <h1 className="pf-h2 text-balance uppercase text-white [text-shadow:3px_3px_0_#606060]">
             Welcome back
           </h1>
-          <p className="mt-3 text-sm font-bold text-ss-text">Back on watch.</p>
+          <p className="mt-4 pf-body-sm text-ss-text">Back on watch.</p>
         </div>
 
         {successMessage ? (
-          <p role="status" aria-live="polite" className="mt-5 border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
-            {successMessage}
+          <p role="status" aria-live="polite" className="mt-6 border-4 border-ss-rule bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">
+            [ OK ] {successMessage}
           </p>
         ) : null}
 
@@ -79,14 +79,14 @@ function Login() {
 
           <div>
             <div className="flex items-center gap-4">
-              <label htmlFor="password" className="block text-lg font-black text-white">
+              <label htmlFor="password" className="block pf-label uppercase text-white">
                 Password
               </label>
               <Link
                 to="/forgot-password"
-                className="ml-auto text-xs font-black text-white underline underline-offset-4 hover:text-ss-muted"
+                className="ml-auto pf-label uppercase text-white underline underline-offset-4 hover:text-ss-muted"
               >
-                Forgot password?
+                Forgot?
               </Link>
             </div>
             <input
@@ -95,23 +95,23 @@ function Login() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
-              className="mt-3 w-full border-4 border-ss-rule bg-ss-inset px-4 py-3 text-base font-bold text-white shadow-pixel-md outline-none placeholder:text-ss-subtle focus:border-white focus:ring-4 focus:ring-white/20"
+              className="mt-2 w-full border-4 border-ss-rule bg-ss-inset px-4 py-3 text-[16px] text-white shadow-pixel-md outline-none placeholder:text-ss-subtle focus:border-white focus:shadow-pixel-white focus:ring-4 focus:ring-white/25"
               required
             />
-            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm font-bold text-ss-text">
+            <label className="mt-3 inline-flex cursor-pointer items-center gap-2 border-2 border-ss-rule bg-ss-inset px-3 py-2 pf-label uppercase text-ss-text hover:border-white">
               <input
                 type="checkbox"
                 checked={showPassword}
                 onChange={(event) => setShowPassword(event.target.checked)}
-                className="h-4 w-4 accent-white"
+                className="h-3.5 w-3.5 appearance-none border-2 border-ss-rule bg-ss-deep checked:border-white checked:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               />
               Show password
             </label>
           </div>
 
           {error ? (
-            <p role="alert" aria-live="assertive" className="border-2 border-ss-muted bg-ss-deep px-3 py-2 text-xs font-bold text-white">
-              {error}
+            <p role="alert" aria-live="assertive" className="border-4 border-white bg-ss-deep px-3 py-3 pf-body-sm text-white shadow-pixel-sm">
+              [ ERR ] {error}
             </p>
           ) : null}
 
@@ -120,8 +120,8 @@ function Login() {
           </Button>
         </form>
 
-        <p className="mt-7 text-center text-sm font-black text-white">
-          Don&apos;t have an account?{' '}
+        <p className="mt-8 text-center pf-body-sm text-white">
+          No account?{' '}
           <Link to="/register" className="underline underline-offset-4 hover:text-ss-muted">
             Sign up
           </Link>
