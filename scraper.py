@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TESTUDO_URL = "https://app.testudo.umd.edu/soc/search"
-DEFAULT_SEMESTER = os.getenv("UMD_SEMESTER", "202608")
+DEFAULT_SEMESTER = os.getenv("UMD_SEMESTER", "202701")
 
 
 def get_sections(section_ids: list[str], semester: str = DEFAULT_SEMESTER) -> list[dict]:
@@ -168,4 +168,3 @@ if __name__ == "__main__":
         print(
             f"section_id: {section['section_id']}, open_seats: {section['open_seats']}, total_seats: {section['total_seats']}, instructors: {section['instructors']}, meetings: {section['meetings']}"
         )
-
