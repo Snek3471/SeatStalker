@@ -4,3 +4,6 @@ venv/
 .env
 *.pyc
 seatstalker.db
+poller/.dev.vars
+poller/node_modules/
+poller/.wrangler/
