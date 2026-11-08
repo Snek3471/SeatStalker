@@ -1,0 +1,6 @@
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+RESEND_API_KEY=re_your_resend_api_key
+RESEND_SENDER_EMAIL=alerts@example.com
+POLL_SECRET=replace-with-a-long-random-token
+UMD_SEMESTER=202701

@@ -27,6 +27,24 @@ SeatStalker is a web application for UMD students to register with their UMD ema
    python scheduler.py
    ```
 
+### Cloudflare Worker poller
+
+The poller can also run as a Cloudflare Worker on a two-minute cron schedule. The
+Worker uses Supabase over HTTPS and does not replace the existing Fly.io poller.
+
+1. Apply `supabase/migrations/202611020001_add_poller_state_and_lock.sql` to the
+   Supabase project.
+2. From `poller`, copy `.dev.vars.example` to `.dev.vars` and fill in the
+   Supabase service-role key, Resend credentials, and `POLL_SECRET`.
+3. Run `npm install` and `npm run dev` for local testing. Wrangler starts with
+   `--test-scheduled`, so scheduled events can be tested locally.
+4. Set the same values as Worker secrets with `wrangler secret put`, then run
+   `npm run deploy`.
+
+The protected manual trigger is `POST /run` with an
+`Authorization: Bearer <POLL_SECRET>` header. The GitHub Actions workflow deploys
+the Worker when files under `poller/` change or when manually dispatched.
+
 ## Frontend
 The app has a React frontend and a FastAPI backend that work together as a full stack application. The backend runs on port `8000`, and the frontend runs on port `5173`.
 

@@ -1,0 +1,11 @@
+{
+  "name": "seatstalker-poller",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "triggers": {
+    "crons": ["*/2 * * * *"]
+  },
+  "vars": {
+    "UMD_SEMESTER": "202701"
+  }
+}
