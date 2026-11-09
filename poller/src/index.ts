@@ -7,6 +7,7 @@ interface Env {
   RESEND_SENDER_EMAIL: string;
   POLL_SECRET: string;
   UMD_SEMESTER?: string;
+  HEALTHCHECK_URL?: string;
 }
 
 interface WatchRow {
@@ -158,11 +159,11 @@ async function releaseLock(client: SupabaseClient): Promise<void> {
   }
 }
 
-async function pollOnce(env: Env): Promise<void> {
+async function pollOnce(env: Env): Promise<boolean> {
   const client = supabase(env);
   if (!(await acquireLock(client))) {
     console.log("Poll skipped because another run holds the lock.");
-    return;
+    return false;
   }
 
   try {
@@ -294,14 +295,29 @@ async function pollOnce(env: Env): Promise<void> {
       throw new Error(`Could not save poller state: ${stateWriteError.message}`);
     }
     console.log(`Poll complete: ${results.length} sections checked.`);
+    return true;
   } finally {
     await releaseLock(client);
   }
 }
 
+// Pings a healthchecks.io-style URL after each successful poll. If the pings stop, the monitor emails you.
+async function pingHeartbeat(env: Env): Promise<void> {
+  if (!env.HEALTHCHECK_URL) {
+    return;
+  }
+  try {
+    await fetch(env.HEALTHCHECK_URL, { method: "POST", signal: AbortSignal.timeout(5000) });
+  } catch (error) {
+    console.error("Heartbeat ping failed:", error);
+  }
+}
+
 async function runSafely(env: Env): Promise<void> {
   try {
-    await pollOnce(env);
+    if (await pollOnce(env)) {
+      await pingHeartbeat(env);
+    }
   } catch (error) {
     console.error("Poll failed:", error);
   }
