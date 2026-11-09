@@ -13,6 +13,7 @@ interface WatchRow {
   id: number;
   section_id: string;
   notified_at: string | null;
+  added_at: string | null;
   users: { email: string } | { email: string }[];
 }
 
@@ -27,6 +28,7 @@ interface SectionResult {
 const TESTUDO_URL = "https://app.testudo.umd.edu/soc/search";
 const STATE_KEY = "course_cursor";
 const COURSE_BATCH_SIZE = 30;
+const NEW_WATCH_WINDOW_MS = 15 * 60 * 1000;
 
 function supabase(env: Env): SupabaseClient {
   return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -113,11 +115,6 @@ async function fetchCourse(courseId: string, semester: string, wanted: Set<strin
   const html = await response.text();
   const parsed = parseSections(html, courseId, wanted);
   console.log(`${courseId}: HTTP ${response.status}, ${html.length} bytes, matched ${parsed.length} of ${wanted.size} wanted sections`);
-  if (parsed.length === 0) {
-    const title = html.match(/<title>\s*([^<]*?)\s*<\/title>/i)?.[1] ?? "no title";
-    const text = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-    console.log(`${courseId}: empty result. title="${title}" course-divs=${(html.match(/class="course"/g) ?? []).length} text="${text.slice(0, 300)}"`);
-  }
   return parsed;
 }
 
@@ -171,7 +168,7 @@ async function pollOnce(env: Env): Promise<void> {
   try {
     const { data: watchRows, error: watchError } = await client
       .from("watchlist")
-      .select("id, section_id, notified_at, users!inner(email)")
+      .select("id, section_id, notified_at, added_at, users!inner(email)")
       .order("section_id");
     if (watchError) {
       throw new Error(`Could not load watchlist: ${watchError.message}`);
@@ -189,17 +186,34 @@ async function pollOnce(env: Env): Promise<void> {
     }
 
     const cursor = courseIds.length === 0 ? 0 : (Number(state?.cursor ?? 0) % courseIds.length);
-    const selectedCourses = courseIds.slice(cursor, cursor + COURSE_BATCH_SIZE);
+    const rotatingCourses = courseIds.slice(cursor, cursor + COURSE_BATCH_SIZE);
+    // Courses with watches added in the last few minutes are checked on every run, so a new watch alerts within ~2 minutes.
+    const courseOf = (row: WatchRow) => row.section_id.split("-", 1)[0].toUpperCase();
+    const recentCourses = rows
+      .filter((row) => {
+        if (!row.added_at) {
+          return false;
+        }
+        const stamp = /(Z|[+-]\d\d:?\d\d)$/.test(row.added_at) ? row.added_at : `${row.added_at}Z`;
+        return Date.now() - Date.parse(stamp) < NEW_WATCH_WINDOW_MS;
+      })
+      .map(courseOf);
+    const selectedCourses = [...new Set([...recentCourses, ...rotatingCourses])];
     const selectedIds = new Set(
       rows
         .filter((row) => selectedCourses.includes(row.section_id.split("-", 1)[0].toUpperCase()))
         .map((row) => row.section_id.toUpperCase()),
     );
     const results: SectionResult[] = [];
-    console.log(`Watchlist rows: ${rows.length}; courses this run: ${selectedCourses.join(", ") || "none"}; wanted: ${[...selectedIds].join(", ") || "none"}`);
+    console.log(`Watchlist rows: ${rows.length}; polling ${selectedCourses.length} of ${courseIds.length} courses (new watches: ${recentCourses.length})`);
 
     for (const courseId of selectedCourses) {
-      results.push(...await fetchCourse(courseId, env.UMD_SEMESTER ?? "202701", selectedIds));
+      try {
+        results.push(...await fetchCourse(courseId, env.UMD_SEMESTER ?? "202701", selectedIds));
+      } catch (error) {
+        // One bad course page must not block every other course (or keep the cursor stuck).
+        console.error(`Skipping ${courseId}:`, error);
+      }
     }
 
     const uniqueResults = [...new Map(results.map((result) => [result.section_id, result])).values()];
@@ -271,7 +285,7 @@ async function pollOnce(env: Env): Promise<void> {
       }
     }
 
-    const nextCursor = courseIds.length === 0 ? 0 : (cursor + selectedCourses.length) % courseIds.length;
+    const nextCursor = courseIds.length === 0 ? 0 : (cursor + rotatingCourses.length) % courseIds.length;
     const { error: stateWriteError } = await client.from("poller_state").upsert(
       { key: STATE_KEY, cursor: nextCursor, updated_at: new Date().toISOString() },
       { onConflict: "key" },
