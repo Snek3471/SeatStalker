@@ -18,7 +18,7 @@ const SECTIONS = [
           'Your name and email address, provided when you register',
           'A securely hashed version of your password (we never store or have access to your plaintext password)',
           'The course sections you choose to watch ("your watchlist")',
-          'Basic technical data such as IP address, collected automatically by our hosting providers (Railway, Vercel) for security and abuse prevention',
+          'Basic technical data such as IP address, collected automatically by our hosting providers (Render, Supabase, Cloudflare, Vercel, Resend) for security and abuse prevention',
         ].map((item) => (
           <li key={item} className="grid grid-cols-[1rem_1fr] gap-2 text-sm font-bold text-ss-text">
             <span className="mt-px select-none text-ss-border" aria-hidden="true">→</span>
@@ -69,9 +69,11 @@ const SECTIONS = [
       <>
         <ul className="space-y-2">
           {[
-            ['Resend', 'to deliver transactional emails (verification codes, password resets, seat alerts)'],
-            ['Railway', 'to host our backend server and database'],
+            ['Render', 'to host our backend server'],
+            ['Supabase', 'to host our database'],
+            ['Cloudflare', 'to run scheduled seat checking'],
             ['Vercel', 'to host our website frontend'],
+            ['Resend', 'to deliver transactional emails (verification codes, password resets, seat alerts)'],
           ].map(([name, desc]) => (
             <li key={name} className="grid grid-cols-[1rem_1fr] gap-2 text-sm font-bold text-ss-text">
               <span className="mt-px select-none text-ss-border" aria-hidden="true">→</span>

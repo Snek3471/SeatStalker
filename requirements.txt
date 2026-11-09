@@ -8,6 +8,5 @@ bcrypt
 python-jose
 passlib
 slowapi
-apscheduler
 resend
 email-validator
