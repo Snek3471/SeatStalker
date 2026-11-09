@@ -81,31 +81,26 @@ function parseSections(html: string, courseId: string, wanted: Set<string>): Sec
 }
 
 async function fetchCourse(courseId: string, semester: string, wanted: Set<string>): Promise<SectionResult[]> {
-  const params = new URLSearchParams({
-    courseId,
-    sectionId: "",
-    termId: semester,
-    creditCompare: ">=",
-    credits: "0.0",
-    courseLevelFilter: "ALL",
-    instructor: "",
-    _facetoface: "on",
-    _blended: "on",
-    _online: "on",
-    teachingCenter: "ALL",
-    _classDay1: "on",
-    _classDay2: "on",
-    _classDay3: "on",
-    _classDay4: "on",
-    _classDay5: "on",
+  // Same query string the Python scraper used (including the empty start/end time params).
+  const url =
+    `${TESTUDO_URL}?courseId=${encodeURIComponent(courseId)}&sectionId=&termId=${encodeURIComponent(semester)}` +
+    "&creditCompare=%3E%3D&credits=0.0&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on" +
+    "&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=" +
+    "&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on";
+  const response = await fetch(url, {
+    headers: { "User-Agent": "SeatStalker/1.0", Accept: "text/html" },
   });
-  const response = await fetch(`${TESTUDO_URL}?${params}`);
   if (!response.ok) {
     throw new Error(`Testudo returned ${response.status} for ${courseId}`);
   }
   const html = await response.text();
   const parsed = parseSections(html, courseId, wanted);
   console.log(`${courseId}: HTTP ${response.status}, ${html.length} bytes, matched ${parsed.length} of ${wanted.size} wanted sections`);
+  if (parsed.length === 0) {
+    const title = html.match(/<title>\s*([^<]*?)\s*<\/title>/i)?.[1] ?? "no title";
+    const text = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    console.log(`${courseId}: empty result. title="${title}" course-divs=${(html.match(/class="course"/g) ?? []).length} text="${text.slice(0, 300)}"`);
+  }
   return parsed;
 }
 
