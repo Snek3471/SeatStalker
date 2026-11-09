@@ -48,6 +48,11 @@ function integerIn(block: string, className: string): number {
 function parseSections(html: string, courseId: string, wanted: Set<string>): SectionResult[] {
   // Each section starts at <div class="section ..."> (not section-id-container etc.).
   const starts = [...html.matchAll(/<div class="section[ "]/gi)].map((match) => match.index ?? 0);
+  // A search for "CMSC25" style ids can return other courses too, so remember which course each section belongs to.
+  const courseMarkers = [...html.matchAll(/<div class="course-id">\s*([A-Z0-9]+)/gi)].map((match) => ({
+    index: match.index ?? 0,
+    id: match[1].toUpperCase(),
+  }));
   const results: SectionResult[] = [];
 
   for (let index = 0; index < starts.length; index += 1) {
@@ -56,6 +61,18 @@ function parseSections(html: string, courseId: string, wanted: Set<string>): Sec
       /<span[^>]*class=["'][^"']*section-id[^"']*["'][^>]*>\s*([^<]+?)\s*<\/span>/i,
     );
     if (!idMatch) {
+      continue;
+    }
+
+    let owner: string | undefined;
+    for (const marker of courseMarkers) {
+      if (marker.index < starts[index]) {
+        owner = marker.id;
+      } else {
+        break;
+      }
+    }
+    if (owner !== undefined && owner !== courseId) {
       continue;
     }
 
@@ -77,7 +94,7 @@ function parseSections(html: string, courseId: string, wanted: Set<string>): Sec
     });
   }
 
-  return results;
+  return [...new Map(results.map((result) => [result.section_id, result])).values()];
 }
 
 async function fetchCourse(courseId: string, semester: string, wanted: Set<string>): Promise<SectionResult[]> {
@@ -185,6 +202,9 @@ async function pollOnce(env: Env): Promise<void> {
       results.push(...await fetchCourse(courseId, env.UMD_SEMESTER ?? "202701", selectedIds));
     }
 
+    const uniqueResults = [...new Map(results.map((result) => [result.section_id, result])).values()];
+    results.length = 0;
+    results.push(...uniqueResults);
     const sectionIds = results.map((result) => result.section_id);
     if (sectionIds.length > 0) {
       const { data: previousCache, error: cacheReadError } = await client
