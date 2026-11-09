@@ -22,15 +22,10 @@ SeatStalker is a web application for UMD students to register with their UMD ema
    ```bash
    uvicorn main:app --reload
    ```
-6. Run the scheduler-based poller:
-   ```bash
-   python scheduler.py
-   ```
-
 ### Cloudflare Worker poller
 
-The poller can also run as a Cloudflare Worker on a two-minute cron schedule. The
-Worker uses Supabase over HTTPS and does not replace the existing Fly.io poller.
+The Cloudflare Worker is the poller and runs on a two-minute cron schedule. It
+uses Supabase over HTTPS.
 
 1. Apply `supabase/migrations/202611020001_add_poller_state_and_lock.sql` to the
    Supabase project.
@@ -44,6 +39,23 @@ Worker uses Supabase over HTTPS and does not replace the existing Fly.io poller.
 The protected manual trigger is `POST /run` with an
 `Authorization: Bearer <POLL_SECRET>` header. The GitHub Actions workflow deploys
 the Worker when files under `poller/` change or when manually dispatched.
+
+## Deployment
+
+- **Worker:** From `poller`, run `npm run deploy`. Set secrets with
+  `npx wrangler secret put` for `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `RESEND_API_KEY`, `RESEND_SENDER_EMAIL`, and `POLL_SECRET`.
+- **Backend:** Deploy the root Dockerfile as a Render web service. Configure
+  `DATABASE_URL` with the Supabase session pooler connection string,
+  `RESEND_API_KEY`, `RESEND_SENDER_EMAIL`, `JWT_SECRET`, `UMD_SEMESTER`, and
+  `FRONTEND_URL`.
+- **Frontend:** Deploy on Vercel with `VITE_API_URL` set to the backend URL
+  without a trailing slash. This must be a plain, non-sensitive variable;
+  redeploy after changing it.
+
+`DATABASE_URL` must use the pooler host (`...pooler.supabase.com`, with user
+`postgres.<project-ref>`), because Render's free tier cannot reach Supabase's
+IPv6-only direct host.
 
 ## Frontend
 The app has a React frontend and a FastAPI backend that work together as a full stack application. The backend runs on port `8000`, and the frontend runs on port `5173`.
