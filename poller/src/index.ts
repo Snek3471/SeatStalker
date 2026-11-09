@@ -46,20 +46,25 @@ function integerIn(block: string, className: string): number {
 }
 
 function parseSections(html: string, courseId: string, wanted: Set<string>): SectionResult[] {
-  const sectionMatches = [...html.matchAll(/<span[^>]*class=["'][^"']*section-id[^"']*["'][^>]*>\s*([^<]+?)\s*<\/span>/gi)];
+  // Each section starts at <div class="section ..."> (not section-id-container etc.).
+  const starts = [...html.matchAll(/<div class="section[ "]/gi)].map((match) => match.index ?? 0);
   const results: SectionResult[] = [];
 
-  for (let index = 0; index < sectionMatches.length; index += 1) {
-    const rawNumber = sectionMatches[index][1].trim().toUpperCase();
+  for (let index = 0; index < starts.length; index += 1) {
+    const block = html.slice(starts[index], starts[index + 1] ?? html.length);
+    const idMatch = block.match(
+      /<span[^>]*class=["'][^"']*section-id[^"']*["'][^>]*>\s*([^<]+?)\s*<\/span>/i,
+    );
+    if (!idMatch) {
+      continue;
+    }
+
+    const rawNumber = idMatch[1].trim().toUpperCase();
     const sectionId = rawNumber.startsWith(courseId) ? rawNumber : `${courseId}-${rawNumber}`;
     if (!wanted.has(sectionId)) {
       continue;
     }
 
-    const matchIndex = sectionMatches[index].index ?? 0;
-    const start = html.lastIndexOf('<div class="section', matchIndex);
-    const nextStart = html.indexOf('<div class="section', matchIndex + 1);
-    const block = html.slice(start < 0 ? matchIndex : start, nextStart < 0 ? html.length : nextStart);
     const openSeats = integerIn(block, "open-seats-count");
     const waitlist = integerIn(block, "waitlist-count");
 
@@ -98,7 +103,10 @@ async function fetchCourse(courseId: string, semester: string, wanted: Set<strin
   if (!response.ok) {
     throw new Error(`Testudo returned ${response.status} for ${courseId}`);
   }
-  return parseSections(await response.text(), courseId, wanted);
+  const html = await response.text();
+  const parsed = parseSections(html, courseId, wanted);
+  console.log(`${courseId}: HTTP ${response.status}, ${html.length} bytes, matched ${parsed.length} of ${wanted.size} wanted sections`);
+  return parsed;
 }
 
 async function sendSeatAlerts(env: Env, recipients: Array<{ email: string; sectionId: string }>): Promise<void> {
@@ -176,6 +184,7 @@ async function pollOnce(env: Env): Promise<void> {
         .map((row) => row.section_id.toUpperCase()),
     );
     const results: SectionResult[] = [];
+    console.log(`Watchlist rows: ${rows.length}; courses this run: ${selectedCourses.join(", ") || "none"}; wanted: ${[...selectedIds].join(", ") || "none"}`);
 
     for (const courseId of selectedCourses) {
       results.push(...await fetchCourse(courseId, env.UMD_SEMESTER ?? "202701", selectedIds));
