@@ -24,7 +24,7 @@ function Spinner() {
   )
 }
 
-function SeatBadge({ open, total }) {
+function SeatBadge({ open }) {
   const openNum = typeof open === 'number' ? open : null
   const hasOpen = openNum !== null && openNum > 0
   return (
@@ -303,7 +303,7 @@ function Dashboard() {
                   </div>
 
                   <div className="flex items-center gap-3 md:flex-col md:items-stretch md:gap-3">
-                    <SeatBadge open={section.open_seats} total={section.seats} />
+                    <SeatBadge open={section.open_seats} />
                     <Button
                       type="button"
                       size="sm"

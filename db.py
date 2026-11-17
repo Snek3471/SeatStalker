@@ -132,70 +132,10 @@ def _initialize_database() -> None:
         pass
 
 
-def get_watched_sections() -> list[str]:
-    query = """
-        SELECT DISTINCT section_id
-        FROM watchlist
-        ORDER BY section_id;
-    """
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
-    return [row[0] for row in rows]
 
 
-def get_section_cache_entry(section_id: str) -> Optional[dict]:
-    query = """
-        SELECT open_seats, total_seats, waitlist, is_available, last_checked
-        FROM section_cache
-        WHERE section_id = %s;
-    """
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query, (section_id,))
-            row = cur.fetchone()
-
-    if not row:
-        return None
-
-    return {
-        "open_seats": row[0],
-        "total_seats": row[1],
-        "waitlist": row[2],
-        "is_available": bool(row[3]),
-        "last_checked": row[4],
-    }
 
 
-def update_section_cache(
-    section_id: str,
-    open_seats: int,
-    total_seats: int,
-    waitlist: int,
-    is_available: bool,
-) -> None:
-    is_available_int = 1 if is_available else 0
-    query = """
-        INSERT INTO section_cache (
-            section_id, open_seats, total_seats, waitlist, is_available, last_checked
-        )
-        VALUES (%s, %s, %s, %s, %s, NOW())
-        ON CONFLICT (section_id)
-        DO UPDATE SET
-            open_seats = EXCLUDED.open_seats,
-            total_seats = EXCLUDED.total_seats,
-            waitlist = EXCLUDED.waitlist,
-            is_available = EXCLUDED.is_available,
-            last_checked = NOW();
-    """
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                query,
-                (section_id, open_seats, total_seats, waitlist, is_available_int),
-            )
-        conn.commit()
 
 
 def get_users_watching(section_id: str) -> list[str]:
@@ -463,42 +403,10 @@ def delete_register_verification_code(email: str) -> None:
         conn.commit()
 
 
-def get_watchers_with_notification_status(section_id: str) -> list[dict]:
-    query = """
-        SELECT w.id, u.email, w.notified_at
-        FROM watchlist w
-        JOIN users u ON w.user_id = u.id
-        WHERE w.section_id = %s;
-    """
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query, (section_id,))
-            rows = cur.fetchall()
-    return [{"watchlist_id": row[0], "email": row[1], "notified_at": row[2]} for row in rows]
 
 
-def mark_watchlist_notified(watchlist_id: int) -> None:
-    query = """
-        UPDATE watchlist
-        SET notified_at = NOW()
-        WHERE id = %s;
-    """
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query, (watchlist_id,))
-        conn.commit()
 
 
-def reset_watchlist_notifications(section_id: str) -> None:
-    query = """
-        UPDATE watchlist
-        SET notified_at = NULL
-        WHERE section_id = %s;
-    """
-    with _get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(query, (section_id,))
-        conn.commit()
 
 
 def get_user_auth_by_email(email: str) -> Optional[dict]:
