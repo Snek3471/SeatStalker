@@ -4,8 +4,7 @@ Get an email the moment a seat opens in a full University of Maryland course sec
 
 **Live demo:** https://seat-stalker.vercel.app
 
-<!-- TODO: add a dashboard screenshot at docs/screenshot.png, then uncomment the next line -->
-<!-- ![SeatStalker dashboard screenshot](docs/screenshot.png) -->
+![SeatStalker landing page](docs/screenshot.png)
 
 ## The problem
 
