@@ -2,7 +2,11 @@
 __pycache__/
 .envrc
 .venv/
+venv/
 frontend/
+poller/
+supabase/
+scratch/
 *.pyc
 *.pyo
 .env

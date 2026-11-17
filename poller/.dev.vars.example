@@ -1,6 +1,19 @@
+# Cloudflare Worker (poller) variables. Copy to .dev.vars for `wrangler dev`;
+# set them in production with `npx wrangler secret put <NAME>`.
+
+# Supabase project URL and service-role key (server-side only, never expose to the browser).
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# Resend API key and verified sender address for seat-alert emails.
 RESEND_API_KEY=re_your_resend_api_key
-RESEND_SENDER_EMAIL=alerts@example.com
+RESEND_SENDER_EMAIL=alerts@yourdomain.com
+
+# Bearer token required by the manual trigger endpoint (POST /run).
 POLL_SECRET=replace-with-a-long-random-token
+
+# UMD Testudo term code to poll (also set as a plain var in wrangler.jsonc).
 UMD_SEMESTER=202701
+
+# Optional: healthchecks.io-style URL pinged after every successful poll.
+# HEALTHCHECK_URL=https://hc-ping.com/your-check-uuid

@@ -1,9 +1,36 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.envrc
+
+# Python
 __pycache__/
+*.py[cod]
 venv/
 .venv/
-.env
-*.pyc
 seatstalker.db
-poller/.dev.vars
-poller/node_modules/
-poller/.wrangler/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Cloudflare Wrangler local state
+.wrangler/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
