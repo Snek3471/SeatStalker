@@ -172,7 +172,7 @@ The semester is set by `UMD_SEMESTER` (backend env var and `vars` in `wrangler.j
 ## Author
 
 <!-- TODO: add your name and a contact/portfolio link -->
-Built by **Harshith Bachimanchi** · [contact: email](harshith@umd.edu)
+Built by **Harshith Bachimanchi** · [harshith@umd.edu](mailto:harshith@umd.edu)
 
 ## License
 
