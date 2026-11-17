@@ -202,7 +202,7 @@ function Dashboard() {
           >
             Your Watchlist
           </h2>
-          <p className="mt-4 pf-body-sm text-ss-text">Checked every 60 seconds. You get one email when a seat opens.</p>
+          <p className="mt-4 pf-body-sm text-ss-text">Checked every 2 minutes. You get one email when a seat opens.</p>
 
           <div className="mt-7 space-y-4">
             {watchlistLoading ? (

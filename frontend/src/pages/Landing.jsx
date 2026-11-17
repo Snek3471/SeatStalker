@@ -16,7 +16,7 @@ const STEPS = [
   {
     num: '2',
     title: 'Watch a section',
-    body: 'Hit Watch on any section. We start checking it every 60 seconds. Nothing to configure, nothing to install.',
+    body: 'Hit Watch on any section. We start checking it every 2 minutes. Nothing to configure, nothing to install.',
   },
   {
     num: '3',
@@ -43,7 +43,7 @@ function Landing() {
         <div className="mx-auto mt-8 pixel-divider max-w-[220px]" aria-hidden="true" />
 
         <p className="mx-auto mt-8 max-w-xl text-balance pf-body text-ss-text">
-          Never miss an open seat during add/drop. We watch your courses every 60 seconds and email you the moment one opens.
+          Never miss an open seat during add/drop. We watch your courses every 2 minutes and email you the moment one opens.
         </p>
 
         {/* Product preview — shows what users will actually see */}
